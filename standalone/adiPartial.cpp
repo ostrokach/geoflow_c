@@ -7,7 +7,7 @@ void xadicor_(double* u_, double* g_, double& deltah, double& deltat, int& nx, i
 
 double* a3_, double* a2_, double* a1xyz, double*cxyz
 ){
-    Mat u(u_, nx,ny,nz), ux(ux_, nx,ny,nz), g(g_, nx,ny,nz), a3(a3_, nx,ny,nz), a2(a2_, nx,ny,nz);
+    Mat<double> u(u_, nx,ny,nz), ux(ux_, nx,ny,nz), g(g_, nx,ny,nz), a3(a3_, nx,ny,nz), a2(a2_, nx,ny,nz);
 //    valarray<double> a1xyz(), cxyz();
     double a = 2.0*deltah, b = a*a;
     for(int k=2; k<nz; ++k){

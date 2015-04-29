@@ -1,4 +1,4 @@
-CFLAGS=-W -Wall -Wextra -I ../../../include/ -I$(GMOCK_HOME)/include -I$(GMOCK_HOME)/gtest/include -std=c++11
+CFLAGS=-W -Wall -Wextra -I ../../../include/ #-I$(GMOCK_HOME)/include -I$(GMOCK_HOME)/gtest/include -std=c++11
 
 # DEBUG
 #CFLAGS+=-g -O0
@@ -13,7 +13,7 @@ CFLAGS=-W -Wall -Wextra -I ../../../include/ -I$(GMOCK_HOME)/include -I$(GMOCK_H
 CFLAGS+=-O3 -DNDEBUG
 
 
-LDFLAGS+=-L$(GMOCK_HOME)/osx -L$(GMOCK_HOME)/osx/gtest -lgtest -lgmock
+#LDFLAGS+=-L$(GMOCK_HOME)/osx -L$(GMOCK_HOME)/osx/gtest -lgtest -lgmock
 OBJS=cpbconcz2.o modules.o pbsolvercz.o surfconcz.o solvationsub.o subfunction.o
 TESTS=solvationsub_test.o surfconcz_test.o
 
@@ -24,7 +24,7 @@ test: test_main.cpp $(OBJS) $(TESTS)
 	$(CXX) $(CFLAGS) -o $@ $^ $(LDFLAGS)
 
 osm: main.cpp $(OBJS)
-	$(CXX) $(CFLAGS) -o $@ $^ $(LDFLAGS)
+	$(CXX) $(CFLAGS) -o $@ $^ #$(LDFLAGS)
 
 %.o: %.cpp
 	$(CXX) $(CFLAGS) -c $<
