@@ -5,9 +5,13 @@ set( CMAKE_VERBOSE_MAKEFILE on )
 
 project (geoflow_standalone)
 
-#FIND_PACKAGE(Eigen)
+SET(geoflow_standalone_CMAKE_DIR "${geoflow_standalone_SOURCE_DIR}/cmake")
 
 include_directories( /usr/local/Cellar/eigen/3.2.4/include/eigen3/ )
+
+#SET(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${geoflow_standalone_CMAKE_DIR}")
+#FIND_PACKAGE(Eigen3 REQUIRED)
+#include_directories( ${EIGEN3_INCLUDE_DIR} )
 
 add_executable(osm main.cpp
      cpbconcz2.cpp
