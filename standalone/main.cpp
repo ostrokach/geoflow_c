@@ -53,94 +53,79 @@
 /// @endverbatim
 
 #include <iostream>
-void pbconcz2(
-		//
-		// These parameters correspond directly to those read in via the datafiles
-		//  (fort.12 and 17set.txt) in the original Fortran code.
-		//
-		// int nmol,
-		double pres_i,
-		double gama_i,
-		int npiter,
-		int ngiter,
-		double tauval,
-		double prob,
-		//
-		// 1 for ZAP-9/AM1-BCCv1; 2 for OPLS/AA
-		int ffmodel,
-		//
-		// Angstrom (radius of water molecule based on LJ parameter sigma)
-		double sigmas,
-		//
-		// epsilon parameter of 0 (kcal/mol) of water molecule
-		double epsilonw,
-		//
-		// 1(on) or 0(off)- previously called REPULSIVE
-		int vdwdispersion,
-		//
-		// (distance atom surface and box boundary)
-		double extvalue,
-		//
-		// flag to indicate the usage of preconditioner iprec =1 (yes); 0 (no)
-		// int iprec,
-		// int istep,
-		//
-		// 0 for explicit scheme; 1 for ADI scheme
-		int iadi,
-		//
-		// weight of previous solution to change the next solution in geometry flow
-		double alpha,
-		//
-		// start guess for PB 1; inherit '0'
-		// int ipbin,
-		double tol,
-		//
-		// total time
-		double tottf,
-		double dcel,
-		int maxstep,
-		double epsilons,
-		double epsilonp,
-		int radexp,
-		double crevalue,
-		//
-		// 0 for solvation force calculation; 1 or accuracy test
-		// int idacsl,
-		//
-		// (use 0.03346)
-		double density );
+#include <string>
 
-int main()
+#include "cpbconcz2.h"
+
+
+int main( int argc, char *argv[] )
 {
+
+   //
+   //  set up some defaults
+   //
+	//int nmol = 17,		// nmol
+	double pres_i = 0.008;
+	double gama_i = 0.0001;
+	int npiter = 1;
+	int ngiter = 1;
+	double tauval = 1.40;
+	double prob = 0.0;
 	int ffmodel = 1;
-	pbconcz2(
-		// 17,		// nmol
-		0.008,		// pres_i
-		0.0001,		// gama_i
-		1,			// npiter
-		1,			// ngiter
-		1.40,		// tauval
-		0.0,		// prob
-		ffmodel,	// ffmodel
-		1.5828,		// sigmas
-		0.1554,		// epsilonw
-		0,			// vdwdispersion
-		1.90,		// extvalue
-		// 0,		// iprec
-		// 10,		// istep
-		0,			// iadi
-		0.50,		// ALPHA
-		// 1,		// IPBIN
-		1e-4,		// TOL
-		3.5,		// TOTTF
-		0.25,		// DCEL
-		20,			// MAXSTEP
-		80.00,		// EPSILONS
-		1.5,		// EPSILONP
-		1,			// RADEXP
-		0.01,		// CREVALUE
-		// 0,		// idacsl
-		0.03346		//density (use 0.03346)
-		);
+	double sigmas = 1.5828;
+	double epsilonw = 0.1554;
+	int vdwdispersion = 0;
+	double extvalue = 1.90;
+	// 0,		// iprec
+	// 10,		// istep
+	int iadi = 0;
+	double alpha = 0.50;
+	// 1,		// IPBIN
+	double tol = 1e-4;
+	double tottf = 3.5;
+	double dcel = 0.25;
+	int maxstep = 20;
+	double epsilons = 80.00;
+	double epsilonp = 1.5;
+	int radexp = 1;
+	double crevalue = 0.01;
+	// 0,		// idacsl
+	double density = 0.03346;
+
+   if( argc < 3 )
+   {
+      std::cout << "Usage: " << argv[0]
+                << " <atom_name.xyzr> <experimental value> [param_file.param] " << std::endl ;
+      exit( 1 );
+   }
+
+   //
+   //  read in xyzr file name
+   //
+   std::string xyzr_filename = argv[1];
+   std::cout << "xyzr filename: " << xyzr_filename << std::endl ;
+
+   //
+   //  read in experimental value
+   //
+   double exper_value = atof( argv[2] );
+   std::cout << "experimental value: " << exper_value << std::endl ;
+
+   //
+   //  read in new values for the params
+   //
+   std::string param_filename;
+   if( argc > 3 )
+   {
+       param_filename = argv[3];
+       std::cout << "param filename: " << param_filename << std::endl ;
+       // TODO - process this param file to replace default values above
+   }
+
+
+	pbconcz2_simple( pres_i, gama_i, npiter, ngiter, tauval, prob,
+      ffmodel, sigmas, epsilonw, vdwdispersion, extvalue, iadi, alpha,
+      tol, tottf, dcel, maxstep, epsilons, epsilonp, radexp, crevalue,
+      density, xyzr_filename, exper_value );
 }
 

@@ -175,26 +175,25 @@ double maxrms(double* sumpot, double* expv, double* elec, double gama, int nmol)
 	return sqrt(rms / nmol);
 }
 
-size_t loadData(std::ifstream& f, //<i
-		int imord, //<i
+size_t loadData(std::ifstream& atomFile, //<i
 		int ffmodel, //<i
 		double radexp, //<i
-		double* expv, //<o expv[imord]
+		double expv, //<o expv[imord]
 		double xyzr[MAXATOMS][XYZRWIDTH], //<o
 		double* pqr, //<o
 		double* ljepsilon //<o
 		)
 {
-	std::string molecule;
-	double val;
-	f >> molecule >> val;
-	std::cout << "expSolv: " << molecule << " \t" << val << std::endl;
-	expv[imord] = val;
+	//std::string molecule;
+	//double val;
+	//f >> molecule >> val;
+	//std::cout << "expSolv: " << molecule << " \t" << val << std::endl;
+	//expv[imord] = val;
 
-	std::string atomFileName = molecule + ".xyzr";
-	std::ifstream atomFile;
-	atomFile.open(atomFileName.c_str());
-        std::cout << "Reading " << atomFileName << std::endl;
+	//std::string atomFileName = molecule + ".xyzr";
+	//std::ifstream atomFile;
+	//atomFile.open(atomFileName.c_str());
+   //     std::cout << "Reading " << atomFileName << std::endl;
 
 	size_t natm = 0;
 	initXYZR(xyzr);
@@ -414,63 +413,63 @@ GeoflowOutput geoflowSolvation(double xyzr[MAXATOMS][XYZRWIDTH], size_t natm,
 	return gfOut;
 }
 
-void processAtomsFile(std::string fileName, int ffmodel, int radexp,
+void processAtomsFile(std::string fileName, double expv, int ffmodel, int radexp,
 		double extvalue, int maxstep, double crevalue, int iadi, double tottf,
 		double alpha, int igfin, double epsilons, double epsilonp, double tol,
 		double &tpb, int &iterf, int &itert, double pres, double gama,
 		double dcel, double tauval, double prob, int vdwdispersion,
 		double sigmas, double density, double epsilonw)
 {
-	std::ifstream f;
-	f.open(fileName.c_str());
+   std::ifstream f;
+   f.open(fileName.c_str());  // .xyzr file
+   std::cout << "Reading " << fileName << std::endl;
 
-	int nmol = numberOfLines(fileName);
-	for (int imord = 0; imord < nmol; imord++) {
-		double xyzr[MAXATOMS][XYZRWIDTH];
-		double ljepsilon[MAXATOMS];
-		double pqr[MAXATOMS];
-		double expv[100]; // hardcoded 100 constant, as per interface to F90 code :(
+   double xyzr[MAXATOMS][XYZRWIDTH];
+   double ljepsilon[MAXATOMS];
+   double pqr[MAXATOMS];
 
-		size_t natm = loadData(f, imord, ffmodel, radexp, expv, xyzr, pqr,
-				ljepsilon);
+   //size_t natm = loadData(f, imord, ffmodel, radexp, expv, xyzr, pqr,
+   //		ljepsilon);
+   size_t natm = loadData(f, ffmodel, radexp, expv, xyzr, pqr,
+         ljepsilon);
 
-		// TODO: Align this with the rest of APBS, and also allow non-symmetric
-		// grid spacing.
-		double dcel3[3] = {dcel, dcel, dcel};
-		GeoflowInput gfin;
-		gfin.dcel = dcel3;
-		gfin.ffmodel = ffmodel;
-		gfin.extvalue = extvalue;
-		gfin.pqr = pqr;
-		gfin.maxstep = maxstep;
-		gfin.crevalue = crevalue;
-		gfin.iadi = iadi;
-		gfin.tottf = tottf;
-		gfin.ljepsilon = ljepsilon;
-		gfin.alpha = alpha;
-		gfin.igfin = igfin;
-		gfin.epsilons = epsilons;
-		gfin.epsilonp = epsilonp;
-		gfin.idacsl = 0;
-		gfin.tol = tol;
-		gfin.iterf = iterf;
-		gfin.tpb = tpb;
-		gfin.itert = itert;
-		gfin.pres = pres;
-		gfin.gama = gama;
-		gfin.tauval = tauval;
-		gfin.prob = prob;
-		gfin.vdwdispersion = vdwdispersion;
-		gfin.sigmas = sigmas;
-		gfin.density = density;
-		gfin.epsilonw = epsilonw;
-		GeoflowOutput gf = geoflowSolvation(xyzr, natm, gfin);
+   // TODO: Align this with the rest of APBS, and also allow non-symmetric
+   // grid spacing.
+   double dcel3[3] = {dcel, dcel, dcel};
+   GeoflowInput gfin;
+   gfin.dcel = dcel3;
+   gfin.ffmodel = ffmodel;
+   gfin.extvalue = extvalue;
+   gfin.pqr = pqr;
+   gfin.maxstep = maxstep;
+   gfin.crevalue = crevalue;
+   gfin.iadi = iadi;
+   gfin.tottf = tottf;
+   gfin.ljepsilon = ljepsilon;
+   gfin.alpha = alpha;
+   gfin.igfin = igfin;
+   gfin.epsilons = epsilons;
+   gfin.epsilonp = epsilonp;
+   gfin.idacsl = 0;
+   gfin.tol = tol;
+   gfin.iterf = iterf;
+   gfin.tpb = tpb;
+   gfin.itert = itert;
+   gfin.pres = pres;
+   gfin.gama = gama;
+   gfin.tauval = tauval;
+   gfin.prob = prob;
+   gfin.vdwdispersion = vdwdispersion;
+   gfin.sigmas = sigmas;
+   gfin.density = density;
+   gfin.epsilonw = epsilonw;
+   GeoflowOutput gf = geoflowSolvation(xyzr, natm, gfin);
 
-		std::cout << "totalSolv:\t" << gf.totalSolvation << "\t";
-		std::cout << "nonpolar: " << gf.nonpolarSolvation << "\t";
-		std::cout << "electro: " << gf.elecSolvation << "\n" << std::endl;
-	}
+   std::cout << "totalSolv:\t" << gf.totalSolvation << "\t";
+   std::cout << "nonpolar: " << gf.nonpolarSolvation << "\t";
+   std::cout << "electro: " << gf.elecSolvation << "\n" << std::endl;
 
+      // if you use this, remove the cast on expv
 	// std::cout << "RMS Error: " << maxrms( (double*)sumpot, (double*)expv,
 			// (double*)elec, gama, nmol) << std::endl;
 }
@@ -507,7 +506,10 @@ void setGamaStep(double &gama_step, double gama)
 	}
 }
 
-void pbconcz2(
+/*
+  Process one atom file at a time
+*/
+void pbconcz2_simple(
 		//
 		// These parameters correspond directly to those read in via the datafiles
 		//  (fort.12 and 17set.txt) in the original Fortran code.
@@ -564,41 +566,29 @@ void pbconcz2(
 		// int idacsl,
 		//
 		// (use 0.03346)
-		double density )
+		double density,
+      std::string molecule,  /* xyzr file */
+      double exper_value /* experimental value used in maxrms */ )
 {
-	std::cout << "Using ffmodel " << ((ffmodel==1)?"ZAP":"OPLS") << std::endl;
-	double pres = pres_i;
-	// writeSupportingFiles(nmol);
+   std::cout << "Using ffmodel " << ((ffmodel==1)?"ZAP":"OPLS") << std::endl;
+   double pres = pres_i;
+   double gama = gama_i;
 
-	double pres_step;
-	for (int indpres = 1; indpres <= npiter; indpres++) {
-		setPresStep(pres_step, pres);
-		if (indpres > 1) {
-			pres += pres_step;
-		}
 
-		double gama = gama_i, gama_step;
-		for (int indgama = 1; indgama <= ngiter; indgama++) {
-			setGamaStep(gama_step, gama);
-			std::cout << "GAMA_STEP = " << gama_step << std::endl;
-			if (indgama > 1) {
-				gama += gama_step;
-			}
-		}
+    std::cout << "GAMA = " << gama << std::endl;
+    std::cout << "density = " << density << std::endl;
+    std::cout << "RORO = " << lj.roro << std::endl;
+    std::cout << "PRES = " << pres << std::endl;
+    std::cout << "CONMS = " << lj.conms << std::endl;
+    std::cout << "-------------------" << std::endl;
 
-		std::cout << "GAMA = " << gama << std::endl;
-		std::cout << "density = " << density << std::endl;
-		std::cout << "RORO = " << lj.roro << std::endl;
-		std::cout << "PRES = " << pres << std::endl;
-		std::cout << "CONMS = " << lj.conms << std::endl;
+    // timing variables?
+    int igfin = 1;  
+    double tpb = 0.0;  // time step calculation for total pb 
+    int iterf = 0, itert = 0; // iteration number for first iteration and total
 
-		int igfin = 1;
-		double tpb = 0.0;
-		int iterf = 0, itert = 0;
-
-		processAtomsFile("molecules.txt", ffmodel, radexp, extvalue, maxstep,
-				crevalue, iadi, tottf, alpha, igfin, epsilons, epsilonp, tol,
-				tpb, iterf, itert, pres, gama, dcel, tauval, prob, vdwdispersion,
-				sigmas, density, epsilonw);
-	}
+    processAtomsFile(molecule, exper_value, ffmodel, radexp, extvalue, maxstep,
+          crevalue, iadi, tottf, alpha, igfin /**/, epsilons, epsilonp, tol,
+          tpb /**/, iterf /**/, itert /**/, pres /* ? */, gama /* ? */, dcel, tauval, prob, vdwdispersion,
+          sigmas, density, epsilonw);
 }

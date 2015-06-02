@@ -7,7 +7,7 @@ project (geoflow_standalone)
 
 #FIND_PACKAGE(Eigen)
 
-include_directories( /usr/local/Cellar/eigen/3.2.1/include/eigen3/ )
+include_directories( /usr/local/Cellar/eigen/3.2.4/include/eigen3/ )
 
 add_executable(osm main.cpp
      cpbconcz2.cpp

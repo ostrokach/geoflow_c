@@ -109,3 +109,65 @@ extern "C"
 GeoflowOutput geoflowSolvation(double xyzr[MAXATOMS][XYZRWIDTH], size_t natm,
 		GeoflowInput gfin);
 
+void pbconcz2_simple(
+		//
+		// These parameters correspond directly to those read in via the datafiles
+		//  (fort.12 and 17set.txt) in the original Fortran code.
+		//
+		// int nmol,
+		double pres_i,
+		double gama_i,
+		int npiter,
+		int ngiter,
+		double tauval,
+		double prob,
+		//
+		// 1 for ZAP-9/AM1-BCCv1; 2 for OPLS/AA
+		int ffmodel,
+		//
+		// Angstrom (radius of water molecule based on LJ parameter sigma)
+		double sigmas,
+		//
+		// epsilon parameter of 0 (kcal/mol) of water molecule
+		double epsilonw,
+		//
+		// 1(on) or 0(off)- previously called REPULSIVE
+		int vdwdispersion,
+		//
+		// (distance atom surface and box boundary)
+		double extvalue,
+		//
+		// flag to indicate the usage of preconditioner iprec =1 (yes); 0 (no)
+		// int iprec,
+		// int istep,
+		//
+		// 0 for explicit scheme; 1 for ADI scheme
+		int iadi,
+		//
+		// weight of previous solution to change the next solution in geometry flow
+		double alpha,
+		//
+		// start guess for PB 1; inherit '0'
+		// int ipbin,
+		double tol,
+		//
+		// total time
+		double tottf,
+		//
+		// This is the grid spacing.
+		double dcel,
+		int maxstep,
+		double epsilons,
+		double epsilonp,
+		int radexp,
+		double crevalue,
+		//
+		// 0 for solvation force calculation; 1 or accuracy test
+		// int idacsl,
+		//
+		// (use 0.03346)
+		double density,
+      std::string molecule,  /* xyzr file */
+      double exper_value /* experimental value used in maxrms */ );
+
+
