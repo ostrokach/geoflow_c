@@ -54,9 +54,27 @@
 
 #include <iostream>
 #include <string>
+#include <boost/property_tree/ptree.hpp>
+#include <boost/property_tree/ini_parser.hpp>
 
 #include "cpbconcz2.h"
 
+
+double getVar( std::string var_name, 
+               boost::property_tree::ptree pt, 
+               double default_val )
+{
+   double var_val = default_val;
+   try{ 
+      var_val = pt.get<double>(var_name); 
+      std::cout<< "Variable " << var_name << " set to " << var_val << std::endl ; 
+   }
+   catch ( std::exception e ) 
+   { 
+      std::cout<< "Warning: " << var_name << " not found." << std::endl ; 
+   }
+   return var_val;
+}
 
 int main( int argc, char *argv[] )
 {
@@ -120,6 +138,36 @@ int main( int argc, char *argv[] )
        param_filename = argv[3];
        std::cout << "param filename: " << param_filename << std::endl ;
        // TODO - process this param file to replace default values above
+
+       boost::property_tree::ptree pt;
+       boost::property_tree::ini_parser::read_ini(param_filename, pt);
+       pres_i = getVar( "Geoflow.pres_i", pt, pres_i ) ;
+       gama_i = getVar( "Geoflow.gama_i", pt, gama_i ) ;
+       npiter = getVar( "Geoflow.npiter", pt, npiter ) ;
+       ngiter = getVar( "Geoflow.ngiter", pt, ngiter ) ;
+       tauval = getVar( "Geoflow.tauval", pt, tauval ) ;
+       prob = getVar( "Geoflow.prob", pt,  prob ) ;
+       ffmodel = getVar( "Geoflow.ffmodel", pt, ffmodel ) ;
+       sigmas = getVar( "Geoflow.sigmas", pt, sigmas ) ;
+       epsilonw = getVar( "Geoflow.epsilonw", pt, epsilonw ) ;
+       vdwdispersion = getVar( "Geoflow.vdwdispersion", pt, vdwdispersion ) ;
+       extvalue = getVar( "Geoflow.extvalue", pt, extvalue ) ;
+       //iprec = getVar( "Geoflow.iprec", pt, iprec ) ;
+       //istep = getVar( "Geoflow.istep", pt, istep ) ;
+       iadi = getVar( "Geoflow.iadi", pt, iadi ) ;
+       alpha = getVar( "Geoflow.alpha", pt, alpha ) ;
+       //ipbin = getVar( "Geoflow.ipbin", pt, ipbin ) ;
+       tol = getVar( "Geoflow.tol", pt, tol ) ;
+       tottf = getVar( "Geoflow.tottf", pt, tottf ) ;
+       dcel = getVar( "Geoflow.dcel", pt, dcel ) ;
+       maxstep = getVar( "Geoflow.maxstep", pt, maxstep ) ;
+       epsilons = getVar( "Geoflow.epsilons", pt, epsilons ) ;
+       epsilonp = getVar( "Geoflow.epsilonp", pt, epsilonp ) ;
+       radexp = getVar( "Geoflow.radexp", pt, radexp ) ;
+       crevalue = getVar( "Geoflow.crevalue", pt, crevalue ) ;
+       //idacsl = getVar( "Geoflow.idacls", pt, idacsl ) ;
+       density = getVar( "Geoflow.density", pt, density ) ;
+       //iflag = getVar( "Geoflow.iflag", pt, iflag ) ;
    }
 
 
