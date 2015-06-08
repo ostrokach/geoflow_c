@@ -157,7 +157,7 @@ void computeSoleng(double& soleng, Mat<>& phi, Mat<>& charget,
 			size_t j = loc_qt(iind,jind,2);
 			size_t k = loc_qt(iind,jind,3);
 
-			soleng += 0.5*charget(iind,jind)*phi(i,j,k);
+			soleng += 0.5 * charget( iind, jind ) * phi(i,j,k);
 		}
 	}
 }
@@ -215,9 +215,13 @@ size_t loadData(std::ifstream& atomFile, //<i
 	return natm;
 }
 
-GeoflowOutput geoflowSolvation(double xyzr[MAXATOMS][XYZRWIDTH], size_t natm,
-		GeoflowInput gfin)
+GeoflowOutput geoflowSolvation(double xyzr[MAXATOMS][XYZRWIDTH], 
+                               size_t natm,
+		                         GeoflowInput gfin)
 {
+   //
+   //  Setup variables (again)
+   //
 	int ffmodel = gfin.ffmodel;
 	double extvalue = gfin.extvalue;
 	double* pqr = gfin.pqr;
@@ -266,6 +270,7 @@ GeoflowOutput geoflowSolvation(double xyzr[MAXATOMS][XYZRWIDTH], size_t natm,
 
 	double potcoe = 1.0 / gama;
 
+   // set the defalt radius if it's too small?
 	if(ffmodel == 1) {
 //        std::replace_if(xyzr, numbers+6, bind1st(equal_to<int>(),0) );
 		for(size_t i = 0; i < natm; ++i){
@@ -273,12 +278,18 @@ GeoflowOutput geoflowSolvation(double xyzr[MAXATOMS][XYZRWIDTH], size_t natm,
 		}
 	}
 
+   //
+   //  initialize the domain
+   //
 	domainini(xyzr, natm, extvalue);
 
 	Mat<> charget(natm, 8);
 	Mat<> corlocqt(natm, 8, 3);
 	Mat<size_t> loc_qt(natm,8,3);
 
+   //
+   //   chage the charge distribution for each atom
+   //
 	for (size_t iatm = 1; iatm <= natm; iatm++) {
 		chargedist(xyzr, pqr, charget, corlocqt, loc_qt, iatm);
 	}
@@ -287,7 +298,10 @@ GeoflowOutput geoflowSolvation(double xyzr[MAXATOMS][XYZRWIDTH], size_t natm,
 	// comdata.{x,y,z}c is not used in this code.  It's in the Fortran code,
 	// but even there it seems to be a nop, with the given input parameters.
 	//
-	int nx = comdata.nx, ny = comdata.ny, nz = comdata.nz;
+	int nx = comdata.nx, 
+       ny = comdata.ny, 
+       nz = comdata.nz;
+
 	comdata.xc.resize(nx);
 	for (int i=0; i<nx; i++) {
 		comdata.xc[i] = comdata.xleft + (i-1)*comdata.dcel;
@@ -315,6 +329,9 @@ GeoflowOutput geoflowSolvation(double xyzr[MAXATOMS][XYZRWIDTH], size_t natm,
 	Mat<> phi(nx,ny,nz,dx,dy,dz), phix(phi), phivoc(phi), surfu(phi), eps(phi),
 			bg(phi);
 
+   //
+   // iteration coupling surface generation and poisson solver
+   //
 	while ((iloop < maxstep) && (diffEnergy > crevalue)) {
 		iloop++;
 		double deltat = 0; //this is wrong for adi...
@@ -341,7 +358,7 @@ GeoflowOutput geoflowSolvation(double xyzr[MAXATOMS][XYZRWIDTH], size_t natm,
 
 		area = volume = attint = 0.0;
 		yhsurface(xyzr, ljepsilon, natm, tott, deltat, phix, surfu, iloop, area,
-				volume, attint, alpha, iadi, igfin);
+				    volume, attint, alpha, iadi, igfin);
 		normalizeSurfuAndEps(surfu, eps, epsilons, epsilonp);
 
 		if (iloop == 1) {
@@ -358,6 +375,9 @@ GeoflowOutput geoflowSolvation(double xyzr[MAXATOMS][XYZRWIDTH], size_t natm,
 		tpb = tpb + titer;
 		itert += iter;
 
+      //
+      //  call the PB Solver!
+      //
 		eps = epsilonp;
 		if (iloop == 1) {
 			pbsolver(eps, phivoc, bg, tol, iter);
@@ -377,21 +397,26 @@ GeoflowOutput geoflowSolvation(double xyzr[MAXATOMS][XYZRWIDTH], size_t natm,
 		}
 
 		// solvation
+		std::cout << "iloop = " << iloop << std::endl;
 		double soleng1, soleng2;
 		soleng1 = soleng2 = 0.0;
 		computeSoleng(soleng1, phi, charget, loc_qt);
 		computeSoleng(soleng2, phivoc, charget, loc_qt);
 		std::cout << "soleng1 = " << soleng1 << std::endl;
 		std::cout << "soleng2 = " << soleng2 << std::endl;
-		std::cout << "soleng2 is too small!!" << std::endl;
+		//std::cout << "soleng2 is too small!!" << std::endl;  // why is this here?
 		elec = (soleng1 - soleng2) * MAGIC_FOO;
 		solv[iloop - 1] = elec + gama * (area + volume * lj.conms + attint *
 				lj.roro);
 		if (iloop > 1) {
 			diffEnergy = fabs((solv[iloop - 1] - solv[iloop - 2]));
 		}
-		std::cout << "solv[iloop-2] = " << solv[iloop-2] << std::endl;
-		std::cout << "solv[iloop-1] = " << solv[iloop-1] << std::endl;
+		//std::cout << "solv[iloop-2] = " << solv[iloop-2] << std::endl;
+		//std::cout << "solv[iloop-1] = " << solv[iloop-1] << std::endl;
+      for (int i = 0; i < iloop; i++ )
+      {
+         std::cout << "solv[" << i << "] = " << solv[i] << std::endl;
+      }
 		std::cout << "diffEnergy = " << diffEnergy << std::endl;
 	}
 

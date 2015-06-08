@@ -142,6 +142,10 @@ void pbsolver(Mat<>& eps, Mat<>& phi, Mat<>& bgf, double tol, int iter)
 	A.setFromTriplets(tripletList.begin(), tripletList.end());
 	A.makeCompressed();
 
+   //
+   //  bi conjugate gradient stabilized solver for sparse square problems.
+   //    http://en.wikipedia.org/wiki/Biconjugate_gradient_method
+   //
 	Eigen::BiCGSTAB<Eigen::SparseMatrix<double>, Eigen::IdentityPreconditioner> solver(A);
 	solver.setMaxIterations(iter);
 	solver.setTolerance(tol);
@@ -151,6 +155,7 @@ void pbsolver(Mat<>& eps, Mat<>& phi, Mat<>& bgf, double tol, int iter)
 	// energies.  I don't remember the details, but it's something to do with
 	// the Eigen solver being different from what is in the Fortran code.
 	// phi_flat = solver.solveWithGuess(bgf.baseInterface(), phi_flat);
+   // ERJ Note -- Fortran solver: http://sdphca.ucsd.edu/slatec_top/source/dsluom.f
 	phi_flat = solver.solve(bgf.baseInterface());
 
 	for(size_t i = 1; i <= nx; ++i) {
