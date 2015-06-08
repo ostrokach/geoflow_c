@@ -411,8 +411,8 @@ GeoflowOutput geoflowSolvation(double xyzr[MAXATOMS][XYZRWIDTH],
 		if (iloop > 1) {
 			diffEnergy = fabs((solv[iloop - 1] - solv[iloop - 2]));
 		}
-		//std::cout << "solv[iloop-2] = " << solv[iloop-2] << std::endl;
-		//std::cout << "solv[iloop-1] = " << solv[iloop-1] << std::endl;
+      
+      // print the solvation energies by loop index
       for (int i = 0; i < iloop; i++ )
       {
          std::cout << "solv[" << i << "] = " << solv[i] << std::endl;
