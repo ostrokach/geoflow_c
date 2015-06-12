@@ -24,3 +24,7 @@ add_executable(osm main.cpp
      surfconcz.cpp
 )
 
+add_executable(GeometricFlow 
+     runGeometricFlow.C
+     GeometricFlow.C
+)

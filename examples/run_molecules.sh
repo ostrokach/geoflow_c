@@ -1,11 +1,13 @@
 #!/bin/csh
 
 set exec = '../standalone_build/osm'
+#set exec = '../standalone_release/osm'
+#set exec = '../standalone_oldEigen/osm'
 
 $exec kts.xyzr          -9.81
 $exec imidazole.xyzr    -9.81
 $exec gly.xyzr          -8.84
-$exec enzylb.xyzr      -2.38
+$exec benzylb.xyzr      -2.38
 $exec benzylc.xyzr      -1.93
 $exec mbis.xyzr          1.07
 $exec nnd.xyzr          -11.01
