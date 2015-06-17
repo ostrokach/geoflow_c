@@ -103,6 +103,9 @@ typedef struct _GeoflowInput
 	double epsilonw;
 } GeoflowInput;
 
+/* for size_t */
+#include <stddef.h>
+
 #ifdef __cplusplus
 extern "C"
 #endif
