@@ -58,6 +58,7 @@
 #include <boost/property_tree/ini_parser.hpp>
 
 #include "GeometricFlow.h"
+#include "Atom.h"
 
 
 double getVar( std::string var_name, 
@@ -93,7 +94,6 @@ int main( int argc, char *argv[] )
    //  read in xyzr file name
    //
    std::string xyzr_filename = argv[1];
-   std::cout << "xyzr filename: " << xyzr_filename << std::endl ;
 
    //
    //  read in new values for the params
@@ -132,6 +132,19 @@ int main( int argc, char *argv[] )
        GF.setEpsilonP( epsilonp );
 
    }
+
+   //
+   //  Initialize the atom list data structure 
+   //
+   cout << "reading: " << xyzr_filename << endl ;
+   AtomList AL( xyzr_filename, GF.getRadExp(), GF.getFFModel() ); 
+
+   //
+   //  Setup the geoflow solver
+   //
+   cout << "seting up..." << endl ;
+   GF.setup( AL );
+   
 
 
 /*	pbconcz2_simple( pres_i, gama_i, npiter, ngiter, tauval, prob,

@@ -11,6 +11,11 @@
 #include <algorithm>
 #include <climits>
 #include <stdio.h>
+#include <valarray>
+
+#include "Atom.h"
+#include "Mat.h"
+#include "ComData.h"
 
 
 using namespace std;
@@ -51,7 +56,40 @@ class GeometricFlow
       double p_crevalue;
       // 0,		// idacsl
       double p_density;
+      double p_foo;  // MAGIC_FOO
 
+      ComData p_comdata;
+
+
+
+      /*
+      double p_comdata_deltax;
+      double p_comdata_deltay;
+      double p_comdata_deltaz;
+      double p_comdata_dcel;
+      double p_comdata_xleft;
+      double p_comdata_yleft;
+      double p_comdata_zleft;
+      double p_comdata_xright;
+      double p_comdata_yright;
+      double p_comdata_zright;
+      double p_comdata_nx;
+      double p_comdata_ny;
+      double p_comdata_nz;
+      double p_comdata_pi;
+      */
+
+      double left(const valarray<double>& pr, double h, double ev)
+      {
+         return floor( (pr - ev).min()/h ) * h - ev;
+      }
+
+      double right(const valarray<double>& pr, double h, double ev)
+      {
+         return ceil( (pr + ev).max()/h ) * h + ev;
+      }
+
+      void domainInitialization( const AtomList& atomlist );
       //
       //  Out Parameters
       //
@@ -117,10 +155,14 @@ class GeometricFlow
       
       double getEpsilonP() { return p_epsilonp; }
 
+      double getRadExp() { return p_radexp; }
+
       //
       //  for debugging
       //
       void printAllParams();
+
+      void setup( const AtomList& atomList );
       
 
 

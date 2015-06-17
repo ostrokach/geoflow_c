@@ -200,8 +200,7 @@ size_t loadData(std::ifstream& atomFile, //<i
 	std::fill(ljepsilon, ljepsilon + MAXATOMS, 0.0);
 
 	while (atomFile >> xyzr[natm][0]) {
-		atomFile >> xyzr[natm][1] >> xyzr[natm][2] >> xyzr[natm][3] >>
-			pqr[natm];
+		atomFile >> xyzr[natm][1] >> xyzr[natm][2] >> xyzr[natm][3] >> pqr[natm];
 		if (ffmodel != 1) {
 			atomFile >> ljepsilon[natm];
 		}
@@ -293,7 +292,7 @@ GeoflowOutput geoflowSolvation(double xyzr[MAXATOMS][XYZRWIDTH],
 	for (size_t iatm = 1; iatm <= natm; iatm++) {
 		chargedist(xyzr, pqr, charget, corlocqt, loc_qt, iatm);
 	}
-
+//start here...
 	//
 	// comdata.{x,y,z}c is not used in this code.  It's in the Fortran code,
 	// but even there it seems to be a nop, with the given input parameters.
@@ -412,7 +411,8 @@ GeoflowOutput geoflowSolvation(double xyzr[MAXATOMS][XYZRWIDTH],
 			diffEnergy = fabs((solv[iloop - 1] - solv[iloop - 2]));
 		}
       
-      // print the solvation energies by loop index
+      // print the solvation energies by loop index; want to only print
+      // the last two energies???  this prints them all.
       for (int i = 0; i < iloop; i++ )
       {
          std::cout << "solv[" << i << "] = " << solv[i] << std::endl;

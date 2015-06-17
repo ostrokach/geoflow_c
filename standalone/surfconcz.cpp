@@ -68,12 +68,22 @@ double right(const std::valarray<double>& pr, double h, double ev)
 	return ceil( (pr + ev).max()/h ) * h + ev;
 }
 
-void domainini(double xyzr[MAXATOMS][XYZRWIDTH], const size_t natm,
-		const double extvalue)
+void domainini(double xyzr[MAXATOMS][XYZRWIDTH], 
+               const size_t natm,
+		         const double extvalue)
 {
-	double dx = comdata.deltax, dy = comdata.deltay, dz = comdata.deltaz;
-	std::valarray<double> atom_x(natm), atom_y(natm), atom_z(natm), atom_r(natm);
-	for(size_t i = 0; i < natm; ++i) {
+	double dx = comdata.deltax, 
+          dy = comdata.deltay, 
+          dz = comdata.deltaz;
+   std::cout << "dx, dy, dz: " << dx << ", " << dy << ", " << dz << std::endl ;
+	
+   std::valarray<double> atom_x(natm), 
+                         atom_y(natm),
+                         atom_z(natm), 
+                         atom_r(natm);
+
+	for(size_t i = 0; i < natm; ++i) 
+   {
 		atom_x[i] = xyzr[i][0];
 		atom_y[i] = xyzr[i][1];
 		atom_z[i] = xyzr[i][2];
