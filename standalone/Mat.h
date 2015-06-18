@@ -59,11 +59,7 @@
 
 #include <Eigen/Core>
 
-// The following is from modules.h, which includes this file, Mat.h.  We need
-// the declaration here because we use it below in the deriv method.  If we
-// don't declare it, clang and gcc > 4.4.7-4 will complain about not being able
-// to resolve the function.
-double dot(double x, double y, double z);
+inline double dot(double x, double y, double z) { return x*x + y*y + z*z; }
 
 //!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 // Nota Bene!  Caveat Emptor!  Ad Nauseam!
@@ -289,7 +285,7 @@ struct Stencil : public std::iterator<std::forward_iterator_tag, T>
 		if ((i+1) % yStep == 0) {
 			if ((i+1+yStep) % zStep == 0 ) {
 				// Skip the last row in this z, and the first in the next z.
-				// Plus we need to skip the last anf first columns, as below.
+				// Plus we need to skip the last and first columns, as below.
 				ptrStep(2*yStep + 2);
 			} else {
 				// Skip the last column in the current row, and the first
@@ -305,12 +301,12 @@ struct Stencil : public std::iterator<std::forward_iterator_tag, T>
 		c += numSteps;
 	}
 
-	const T* xm() const { return c - 1; }		// PHI(IX-1,IY,IZ)
-	const T* xp() const { return c + 1; }		// PHI(IX+1,IY,IZ)
-	const T* ym() const { return c - yStep; }	// PHI(IX,IY-1,IZ)
-	const T* yp() const { return c + yStep; }	// PHI(IX,IY+1,IZ)
-	const T* zm() const { return c - zStep; }	// PHI(IX,IY,IZ-1)
-	const T* zp() const { return c + zStep; }	// PHI(IX,IY,IZ+1)
+	inline const T* xm() const { return c - 1; }		// PHI(IX-1,IY,IZ)
+	inline const T* xp() const { return c + 1; }		// PHI(IX+1,IY,IZ)
+	inline const T* ym() const { return c - yStep; }	// PHI(IX,IY-1,IZ)
+	inline const T* yp() const { return c + yStep; }	// PHI(IX,IY+1,IZ)
+	inline const T* zm() const { return c - zStep; }	// PHI(IX,IY,IZ-1)
+	inline const T* zp() const { return c + zStep; }	// PHI(IX,IY,IZ+1)
 
 	const T* xym() const { return xm() - yStep; } // PHI(IX-1,IY-1,IZ)
 	const T* xyp() const { return xp() + yStep; } // PHI(IX+1,IY+1,IZ)
@@ -326,17 +322,17 @@ struct Stencil : public std::iterator<std::forward_iterator_tag, T>
 	const T* ym_zp() const { return ym() + zStep; } // PHI(IX,IY-1,IZ+1)
 	const T* yp_zm() const { return yp() - zStep; } // PHI(IX,IY+1,IZ-1)
 
-	T dx() const { return halfhx * (*xp() - *xm()); } // PHIX
-	T dy() const { return halfhy * (*yp() - *ym()); } // PHIY
-	T dz() const { return halfhz * (*zp() - *zm()); } // PHIZ
+	inline T dx() const { return halfhx * (*xp() - *xm()); } // PHIX
+	inline T dy() const { return halfhy * (*yp() - *ym()); } // PHIY
+	inline T dz() const { return halfhz * (*zp() - *zm()); } // PHIZ
 
-	T dxx() const { return h2x * (*xp() - 2.0*(*c) + *xm()); } // PHIXX
-	T dyy() const { return h2y * (*yp() - 2.0*(*c) + *ym()); } // PHIYY
-	T dzz() const { return h2z * (*zp() - 2.0*(*c) + *zm()); } // PHIZZ
+	inline T dxx() const { return h2x * (*xp() - 2.0*(*c) + *xm()); } // PHIXX
+	inline T dyy() const { return h2y * (*yp() - 2.0*(*c) + *ym()); } // PHIYY
+	inline T dzz() const { return h2z * (*zp() - 2.0*(*c) + *zm()); } // PHIZZ
 
-	T dxy() const { return qrth2x * (*xyp() + *xym() - *xm_yp() - *xp_ym()); } // PHIXY
-	T dxz() const { return qrth2y * (*xzp() + *xzm() - *xm_zp() - *xp_zm()); } // PHIXZ
-	T dyz() const { return qrth2z * (*yzp() + *yzm() - *ym_zp() - *yp_zm()); } // PHIYZ
+	inline T dxy() const { return qrth2x * (*xyp() + *xym() - *xm_yp() - *xp_ym()); } // PHIXY
+	inline T dxz() const { return qrth2y * (*xzp() + *xzm() - *xm_zp() - *xp_zm()); } // PHIXZ
+	inline T dyz() const { return qrth2z * (*yzp() + *yzm() - *ym_zp() - *yp_zm()); } // PHIYZ
 
 	T deriv(T tx) const {
 // From the following Fortran...
