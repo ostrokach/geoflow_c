@@ -61,6 +61,7 @@ class Atom
       double z() const { return p_z; }
       double r() const { return p_radius; }
       double pqr() const { return p_pqr; }
+      double epsilon() const { return p_ljepsilon; }
 
       //
       //  for debugging

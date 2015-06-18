@@ -352,7 +352,9 @@ struct Stencil : public std::iterator<std::forward_iterator_tag, T>
 		dphi -= 2.0 * ( dx()*dy()*dxy() + dx()*dz()*dxz() + dy()*dz()*dyz() );
 
 // GRAM=(1.D0+PHIX**2+PHIY**2+PHIZ**2)
-		double gram = 1.0 + dot(dx(),dy(),dz());
+		//double gram = 1.0 + dot(dx(),dy(),dz());
+		double gram = 1.0 + /* dot */
+         dx()*dx() + dy()*dy() + dz()*dz();
 
 // DPHI=DPHI/GRAM+SQRT(GRAM)*PHITOTX(IX,IY,IZ)
 		double d = dphi/gram + sqrt(gram)*tx;

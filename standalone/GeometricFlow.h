@@ -17,6 +17,8 @@
 #include "Mat.h"
 #include "ComData.h"
 
+#include <Eigen/Sparse>
+
 
 using namespace std;
 
@@ -60,6 +62,9 @@ class GeometricFlow
 
       ComData p_comdata;
 
+      int p_lj_iosetar;
+      int p_lj_iosetaa;
+      int p_lj_iwca;
 
 
       /*
@@ -89,10 +94,48 @@ class GeometricFlow
          return ceil( (pr + ev).max()/h ) * h + ev;
       }
 
+      double dot (double x, double y, double z) { return x*x + y*y + z*z; }
+
+
       void domainInitialization( const AtomList& atomlist );
-      //
-      //  Out Parameters
-      //
+
+      void yhsurface( const AtomList& atomList, 
+         double tott, double dt, Mat<>& phitotx, Mat<>& surfu, int iloop,
+         double& area, double& volume, double& attint, double alpha, int iadi,
+         int igfin, double roro, double conms );
+
+      void potIntegral(double rcfactor, size_t natm,
+            valarray<double>& atom_x, valarray<double>& atom_y,
+            valarray<double>& atom_z, valarray<double>& seta12,
+            valarray<double>& seta6, valarray<double>& epsilon,
+            valarray<double>& sigma, Mat<>& g, Mat<>& potr, Mat<>& pota);
+      
+      double volumeIntegration(const Mat<>& f);
+
+      void upwinding(double dt, int nt, 
+                              Mat<>& g, Mat<>& su, Mat<>& phitotx);
+
+      void initial(double xl, double yl, double zl, int n_atom,
+            const std::valarray<double>& atom_x, const std::valarray<double>& atom_y,
+            const std::valarray<double>& atom_z, const std::valarray<double>& atom_r,
+            Mat<>& g, Mat<>& phi);
+
+      void normalizeSurfuAndEps (Mat<>& surfu, Mat<>& eps);
+
+      void computeSoleng(double& soleng, 
+                   Mat<>& phi, Mat<>& charget, Mat<size_t>& loc_qt);
+
+      void seteqb( Mat<>& bg, const AtomList& al, Mat<>& charget, Mat<>& corlocqt);
+
+      double qb(size_t i,size_t j,size_t k, const AtomList& al,
+            Mat<>& charget, Mat<>& corlocqt );
+      
+      double qbboundary( double x, double y, double z, const AtomList& al );
+      
+      double qbinterior(double x, double y, double z, 
+            Mat<>& charget, Mat<>& corlocqt);
+
+      void pbsolver(Mat<>& eps, Mat<>& phi, Mat<>& bgf, double tol, int iter);
 
    public:
 

@@ -51,6 +51,10 @@ GeometricFlow::GeometricFlow( )
    // http://ccom.ucsd.edu/~mholst/pubs/dist/Hols94d.pdf (page 12)
    p_foo = 332.06364;  // TODO: WTH did this come from???
 
+   p_lj_iosetar = 1;
+   p_lj_iosetaa = 1;
+   p_lj_iwca = 1;
+
 }
 
 //~GeometricFlow() { };
@@ -199,6 +203,7 @@ void GeometricFlow::setup( const AtomList& atomList )
    double potcoe = 1.0 / p_gama_i;
    double lj_roro = p_density / p_gama_i;
    double lj_conms = p_pres_i / p_gama_i;
+   int igfin = 1;
 
    //
    // iteration coupling surface generation and poisson solver
@@ -221,12 +226,12 @@ void GeometricFlow::setup( const AtomList& atomList )
       }
 
 		area = volume = attint = 0.0;
-//		yhsurface(xyzr, ljepsilon, natm, tott, deltat, phix, surfu, iloop, area,
-//				    volume, attint, alpha, iadi, igfin);
-//		normalizeSurfuAndEps(surfu, eps, epsilons, epsilonp);
+		yhsurface(atomList, tott, deltat, phix, surfu, iloop, area,
+   			    volume, attint, p_alpha, p_iadi, igfin, lj_roro, lj_conms);
+		normalizeSurfuAndEps(surfu, eps); 
 
 		if (iloop == 1) {
-//			seteqb(bg, xyzr, pqr, charget, corlocqt, epsilons);
+			seteqb(bg, atomList, charget, corlocqt );
 		}
 
 		int iter = 1000;
@@ -267,8 +272,8 @@ void GeometricFlow::setup( const AtomList& atomList )
 		cout << "iloop = " << iloop << std::endl;
 		double soleng1, soleng2;
 		soleng1 = soleng2 = 0.0;
-//		computeSoleng(soleng1, phi, charget, loc_qt);
-//		computeSoleng(soleng2, phivoc, charget, loc_qt);
+		computeSoleng(soleng1, phi, charget, loc_qt);
+		computeSoleng(soleng2, phivoc, charget, loc_qt);
 		std::cout << "soleng1 = " << soleng1 << std::endl;
 		std::cout << "soleng2 = " << soleng2 << std::endl;
 		//std::cout << "soleng2 is too small!!" << std::endl;  // why is this here?
@@ -276,7 +281,7 @@ void GeometricFlow::setup( const AtomList& atomList )
 		solv[iloop - 1] = elec + p_gama_i * (area + volume * lj_conms + attint *
 				lj_roro);
 		if (iloop > 1) {
-//			diffEnergy = fabs((solv[iloop - 1] - solv[iloop - 2]));
+			diffEnergy = fabs((solv[iloop - 1] - solv[iloop - 2]));
 		}
       
       // print the solvation energies by loop index; want to only print
@@ -295,7 +300,7 @@ void GeometricFlow::setup( const AtomList& atomList )
 	double totalSolvation = nonpolarSolvation + elec;
    cout << "totalSolv:\t" << totalSolvation << "\t";
    cout << "nonpolar: " << nonpolarSolvation << "\t";
-   cout << "electro: " << elecSolvation << "\n" << std::endl;
+   cout << "electro: " << elec << "\n" << std::endl;
 
 }
 
@@ -339,24 +344,23 @@ void GeometricFlow::domainInitialization( const AtomList& atomList )
 
 }
 
-
-//		yhsurface(xyzr, ljepsilon, natm, tott, deltat, phix, surfu, iloop, area,
-//				    volume, attint, alpha, iadi, igfin);
+//
+//		yhsurface
+//
 void GeometricFlow::yhsurface( const AtomList& atomList,
-     double* ljepsilon, 
 		double tott, double dt, Mat<>& phitotx, Mat<>& surfu, int iloop,
 		double& area, double& volume, double& attint, double alpha, int iadi,
-		int igfin)
+		int igfin, double roro, double conms )
 {
    const int natm = atomList.size();
 	size_t nx = p_comdata.nx(), ny = p_comdata.ny(), nz = p_comdata.nz();
 	double xl = p_comdata.xleft(), yl = p_comdata.yleft(), zl = p_comdata.zleft();
 	std::valarray<double> atom_x(natm), atom_y(natm), atom_z(natm), atom_r(natm);
 	for (size_t i = 0; i < natm; ++i) {
-		atom_x[i] = xyzr[i][0];
-		atom_y[i] = xyzr[i][1];
-		atom_z[i] = xyzr[i][2];
-		atom_r[i] = xyzr[i][3];
+		atom_x[i] = atomList.get(i).x(); //xyzr[i][0];
+		atom_y[i] = atomList.get(i).y(); //xyzr[i][1];
+		atom_z[i] = atomList.get(i).z(); //xyzr[i][2];
+		atom_r[i] = atomList.get(i).r(); //xyzr[i][3];
 	}
 
 	Mat<> su(surfu), g(surfu);
@@ -375,14 +379,14 @@ void GeometricFlow::yhsurface( const AtomList& atomList,
 				double se = sigma[i]/(atom_r[i] + p_prob);
 				epsilon[i] = pow( pow(se, 12.0) - 2.0*pow(se, 6.0) , -1.0);
 			}
-			seta12[i] = lj.iosetar * p_vdwdispersion * epsilon[i];
-			seta6[i] = 2.0*lj.iosetaa * p_vdwdispersion * epsilon[i];
+			seta12[i] = p_lj_iosetar * p_vdwdispersion * epsilon[i];
+			seta6[i] = 2.0*p_lj_iosetaa * p_vdwdispersion * epsilon[i];
 		}
 	} else {
 		for (size_t i = 0; i < natm; ++i) {
 			sigma[i] = sqrt(4.0* atom_r[i] * p_sigmas);
 			if (p_vdwdispersion != 0) {
-				epsilon[i] = sqrt(ljepsilon[i] * p_epsilonw);
+				epsilon[i] = sqrt(atomList.get(i).epsilon() * p_epsilonw);
 				seta12[i] = 4.0*epsilon[i];
 				seta6[i] = 4.0*epsilon[i];
 			}
@@ -393,11 +397,11 @@ void GeometricFlow::yhsurface( const AtomList& atomList,
 	potIntegral(rcfactor, natm, atom_x, atom_y, atom_z, seta12, seta6,
 			epsilon, sigma, g, potr, pota);
 
-	if (lj.iwca == 1)
+	if (p_lj_iwca == 1)
 		potr = 0;
 
 	for (size_t i = 0; i < phitotx.size(); ++i) {
-		phitotx[i] = -lj.conms - phitotx[i] + lj.roro*(potr[i] + pota[i]);
+		phitotx[i] = -conms - phitotx[i] + roro*(potr[i] + pota[i]);
 	}
 
 	if (iadi == 0 || iloop > 1) {
@@ -421,15 +425,14 @@ void GeometricFlow::yhsurface( const AtomList& atomList,
 	std::cout << "volume = " << volume << std::endl;
 
 	Mat<> fintegr(nx,ny,nz);
-	double dx = comdata.deltax, dy = comdata.deltay, dz = comdata.deltaz;
+	double dx = p_comdata.deltax(), dy = p_comdata.deltay(), dz = p_comdata.deltaz();
 	for (size_t x = 2; x < nx; ++x) {
 		for (size_t y = 2; y < ny; ++y) {
 			for (size_t z = 2; z < nz; ++z) {
 				double sux = su(x+1,y,z) - su(x-1,y,z);
 				double suy = su(x,y+1,z) - su(x,y-1,z);
 				double suz = su(x,y,z+1) - su(x,y,z-1);
-				fintegr(x,y,z) = sqrt(dot(sux/(2.0*dx), suy/(2.0*dy),
-						suz/(2.0*dz)));
+				fintegr(x,y,z) = sqrt( dot(sux/(2.0*dx), suy/(2.0*dy), suz/(2.0*dz)));
 			}
 		}
 	}
@@ -440,7 +443,7 @@ void GeometricFlow::yhsurface( const AtomList& atomList,
 	potIntegral(rcfactor, natm, atom_x, atom_y, atom_z, seta12, seta6,
 			epsilon, sigma, g, potr, pota);
 
-	if (lj.iwca == 1) {
+	if (p_lj_iwca == 1) {
 		for (size_t i = 0; i < fintegr.size(); ++i) {
 			fintegr[i] = pota[i]*(1e3 - su[i]);
 		}
@@ -453,3 +456,374 @@ void GeometricFlow::yhsurface( const AtomList& atomList,
 	attint = volumeIntegration(fintegr);
 	std::cout << "attint = " << attint << std::endl;
 }
+
+
+//
+//  potIntegral
+//
+void GeometricFlow::potIntegral(double rcfactor, size_t natm,
+      valarray<double>& atom_x, valarray<double>& atom_y,
+      valarray<double>& atom_z, valarray<double>& seta12,
+      valarray<double>& seta6, valarray<double>& epsilon,
+      valarray<double>& sigma, Mat<>& g, Mat<>& potr, Mat<>& pota)
+{
+   double dx = p_comdata.deltax(), dy = p_comdata.deltay(), dz = p_comdata.deltaz();
+   for (size_t x = 2; x < potr.nx(); ++x) {
+      for (size_t y = 2; y < potr.ny(); ++y) {
+         for (size_t z = 2; z < potr.nz(); ++z) {
+
+            if (g(x,y,z) == 0) { continue; }
+
+            double pr=0, pa=0;
+            for (size_t a = 0; a < natm; ++a) {
+               const double xi = p_comdata.xleft() + (x-1)*dx;
+               const double yi = p_comdata.yleft() + (y-1)*dy;
+               const double zi = p_comdata.zleft() + (z-1)*dz;
+               const double dist = sqrt( dot(xi-atom_x[a], yi-atom_y[a],
+                        zi-atom_z[a]) ) + p_prob;
+               const double ratio = (dist==0.0) ? 1.0 : sigma[a]/dist;
+               const double ratio6 = ratio*ratio*ratio*ratio*ratio*ratio;
+               const double ratio12 = ratio6*ratio6;
+
+               if (p_lj_iwca == 1) {
+                  if (ratio*rcfactor > 1) {
+                     pr += seta12[a]*ratio12 - seta6[a]*ratio6 + epsilon[a];
+                     pa -= epsilon[a];
+                  } else {
+                     pa = pa - seta6[a]*ratio6 + seta12[a]*ratio12;
+                  }
+               } else {
+                  pr += ratio12*seta12[a];
+                  pa -= ratio6*seta6[a];
+               }
+            }
+            potr(x,y,z) = pr;
+            pota(x,y,z) = pa;
+         }
+      }
+   }
+}
+
+//
+//  volumeIntegration
+//
+double GeometricFlow::volumeIntegration(const Mat<>& f)
+{
+	double sumf = f.baseInterface().sum();
+	return sumf/1000 * p_comdata.deltax() * p_comdata.deltay() * p_comdata.deltaz();
+}
+
+//
+//  upwinding
+//
+void GeometricFlow::upwinding(double dt, int nt, 
+                              Mat<>& g, Mat<>& su, Mat<>& phitotx)
+{
+	Mat<> surfnew(su);
+	for (int t = 0; t < nt; ++t) {
+		for (Stencil<double> phi = su.stencilBegin();
+				phi != su.stencilEnd(); ++phi) {
+			if (g[phi.i] > 2e-2) {
+				surfnew[phi.i] = fmin(1000.0,
+						fmax(0.0, *(phi.c) + dt * phi.deriv(phitotx[phi.i])));
+			}
+		}
+		su = surfnew;
+	}
+}
+
+//
+//  initial
+//
+void GeometricFlow::initial(double xl, double yl, double zl, int n_atom,
+		const std::valarray<double>& atom_x, const std::valarray<double>& atom_y,
+		const std::valarray<double>& atom_z, const std::valarray<double>& atom_r,
+		Mat<>& g, Mat<>& phi)
+{
+	double dx = p_comdata.deltax(), 
+          dy = p_comdata.deltay(), 
+          dz = p_comdata.deltaz();
+	g = 1.0;
+	phi = 0.0;
+
+	double alpha = 1e3;
+
+	for(int a = 0; a < n_atom; ++a) {
+		double r = atom_r[a];
+		double r2 = r*r;
+		double zmin = ((atom_z[a] - zl - r)/dz + 1.0);
+		double zmax = ((atom_z[a] - zl + r)/dz + 1.0);
+
+		for(int z = ceil(zmin); z <= floor(zmax); ++z) {
+			double distxy = (zl + (z-1)*dz - atom_z[a]);
+			double distxy2 = distxy*distxy;
+			double rxy2 = fabs(r2 - distxy2);
+			double rxy = sqrt(rxy2);
+			double ymin = ((atom_y[a] - yl - rxy)/dy + 1.0);
+			double ymax = ((atom_y[a] - yl + rxy)/dy + 1.0);
+
+			for(int y = ceil(ymin); y <= floor(ymax); ++y) {
+				double distx = (yl + (y-1)*dy - atom_y[a]);
+				double distx2 = distx*distx;
+				double rx = sqrt(fabs(rxy2 - distx2));
+				double xmin = ((atom_x[a] - xl - rx)/dx + 1.0);
+				double xmax = ((atom_x[a] - xl + rx)/dx + 1.0);
+
+				for(int x = ceil(xmin); x <= floor(xmax); ++x) {
+					g(x,y,z) = 0;
+					phi(x,y,z) = alpha;
+				}
+			}
+		}
+	}
+}
+
+//
+//  normalizeSurfAndEps
+//
+void GeometricFlow::normalizeSurfuAndEps (Mat<>& surfu, Mat<>& eps) 
+{
+
+   for (size_t i = 0; i < surfu.size(); i++) {
+      if (surfu[i] > 1000.0) {
+         surfu[i] = 1000.0;
+      }
+
+      if (surfu[i] < 0.0) {
+         surfu[i] = 0.0;
+      }
+
+      eps[i] = p_epsilonp + (p_epsilons - p_epsilonp) *
+         ((1000.0 - surfu[i])/1000.0 );
+   }
+}
+
+//
+//  computeSoleng
+//
+/*
+ * Compute soleng1 and soleng2 (solvation).  This is an artifact of refactoring
+ * the original F90 code.
+ * Parameters:
+ * 		soleng:		The soleng variable to set (compute).  For soleng1, the phi
+ *					array should be phi; for soleng2, the phiarray should be
+ *					phivoc.
+ * 		phi:		Either phi or phivoc array, depending on which soleng
+ * 					variable we are computing
+ *		phiDims:	Vector holding the dimensions of the phi array
+ * 		natm:		The number of atoms
+ * 		loc_qt:		The loc_qt array.  This is a [3][8][natm] int array, but
+ * 					must be passed as a pointer, since natm is a variable.
+ * 		charget:	charget array.  This is an [8][natm] int array.
+ */
+void GeometricFlow::computeSoleng(double& soleng, 
+                   Mat<>& phi, Mat<>& charget, Mat<size_t>& loc_qt)
+{
+   soleng = 0.0;
+   for (size_t iind = 1; iind <= charget.nx(); iind++) {
+      for (size_t jind = 1; jind <= charget.ny(); jind++) {
+         size_t i = loc_qt(iind,jind,1);
+         size_t j = loc_qt(iind,jind,2);
+         size_t k = loc_qt(iind,jind,3);
+
+         soleng += 0.5 * charget( iind, jind ) * phi(i,j,k);
+      }
+   }
+}
+
+//
+// seteqb
+//
+void GeometricFlow::seteqb(Mat<>& bg, const AtomList& AL, Mat<>& charget, Mat<>& corlocqt)
+{
+   double sum = 0.0;
+   for (size_t i = 1; i <= p_comdata.nx(); ++i) 
+   {
+      for (size_t j = 1; j <= p_comdata.ny(); ++j)
+      {
+         for (size_t k = 1; k <= p_comdata.nz(); ++k)
+         {
+            double fp = qb( i, j, k, AL, charget, corlocqt );
+            int ijk = (i-1) * p_comdata.ny() * 
+               p_comdata.nz() + (j-1) * p_comdata.nz() + k - 1;
+            bg[ijk] = fp;
+            sum += fp;
+         }
+      }
+   }
+
+   std::cout << "sum bg = " << sum << std::endl;
+}
+
+//
+//  qb
+//
+double GeometricFlow::qb( size_t i,size_t j,size_t k, const AtomList& AL,
+      Mat<>& charget, Mat<>& corlocqt )
+{
+   double x = p_comdata.xvalue(i);
+   double y = p_comdata.yvalue(j);
+   double z = p_comdata.zvalue(k);
+   if(i < 2 || i > p_comdata.nx() - 1 ||
+         j < 2 || j > p_comdata.ny() - 1 ||
+         k < 2 || k > p_comdata.nz() - 1) {
+      return qbboundary( x, y, z, AL );
+   } else {
+      return qbinterior( x, y, z, charget, corlocqt );
+   }
+}
+
+//
+// qbboundary
+//
+double GeometricFlow::qbboundary( double x, double y, double z,
+      const AtomList& atomList )
+{  
+   double vbdn = 0;
+   for (size_t a = 0; a < atomList.size(); ++a) {
+      double x_q = x - atomList.get(a).x(); //xyzr[a][1];
+      double y_q = y - atomList.get(a).y(); //xyzr[a][2];
+      double z_q = z - atomList.get(a).z(); //xyzr[a][3];
+      double q_q = atomList.get(a).pqr(); //pqr[a];
+      double rr = sqrt( dot(x_q, y_q, z_q) );
+      vbdn += q_q/( p_epsilons * rr );
+   }
+   return vbdn;
+}
+
+//
+//  qbinterior
+//
+double GeometricFlow::qbinterior(double x, double y, double z, Mat<>& charget, Mat<>& corlocqt)
+{
+   double fp = 0;
+   for (size_t a = 1; a <= charget.nx(); ++a) {
+      for (size_t ii = 1; ii <= charget.ny(); ++ii) {
+         double xc = x - corlocqt(a,ii,1);
+         double yc = y - corlocqt(a,ii,2);
+         double zc = z - corlocqt(a,ii,3);
+         if ( dot(xc,yc,zc) <= 1e-13) {
+            fp -= 4.0 * p_comdata.pi() * charget(a,ii)/
+                  ( p_comdata.deltax() * p_comdata.deltay() *
+                    p_comdata.deltaz() );
+         }
+      }
+   }
+
+   return fp;
+}
+
+//
+//  pbsolver
+//
+void GeometricFlow::pbsolver(Mat<>& eps, Mat<>& phi, Mat<>& bgf, double tol, int iter)
+{
+	size_t nx = eps.nx(), ny = eps.ny(), nz = eps.nz();
+	double dx = p_comdata.deltax(), 
+          dy = p_comdata.deltay(), 
+          dz = p_comdata.deltaz();
+
+	Mat<> eps1(nx,ny,nz), eps2(nx,ny,nz), eps3(nx,ny,nz);
+	for(size_t i = 1; i < nx; ++i) {
+		for(size_t j = 1; j < ny; ++j) {
+			for(size_t k = 1; k < nz; ++k) {
+				eps1(i,j,k) = (eps(i+1,j,k) + eps(i,j,k))/2.0;
+				eps2(i,j,k) = (eps(i,j+1,k) + eps(i,j,k))/2.0;
+				eps3(i,j,k) = (eps(i,j,k+1) + eps(i,j,k))/2.0;
+			}
+		}
+	}
+
+	std::vector <Eigen::Triplet<double> > tripletList;
+	tripletList.reserve(nx*ny*nz);
+	Eigen::VectorXd phi_flat(nx*ny*nz);
+
+	size_t n = nx*ny*nz;
+	for (size_t i = 1; i <= nx; ++i) {
+		for (size_t j = 1; j <= ny; ++j) {
+			for(size_t k = 1; k <= nz; ++k) {
+				size_t ijk = (i-1)*nz*ny + (j-1)*nz + k-1;
+				if (i==1 || i==nx || j==1 || j==ny || k==1 || k==nz) {
+					tripletList.push_back(Eigen::Triplet<double>(ijk, ijk, 1.0));
+				} else {
+					double f = -(  (eps1(i,j,k) + eps1(i-1,j,k))/dx/dx
+								 + (eps2(i,j,k) + eps2(i,j-1,k))/dy/dy
+								 + (eps3(i,j,k) + eps3(i,j,k-1))/dz/dz );
+					tripletList.push_back(Eigen::Triplet<double>(ijk, ijk, f));
+
+					double weit[6];
+					weit[0] = eps1(i-1,j,k)/dx/dx;
+					weit[1] = eps2(i,j-1,k)/dy/dy;
+					weit[2] = eps3(i,j,k-1)/dz/dz;
+					weit[3] = eps3(i,j,k)/dz/dz;
+					weit[4] = eps2(i,j,k)/dy/dy;
+					weit[5] = eps1(i,j,k)/dx/dx;
+
+					assert(ijk > nz*ny);
+					size_t jj = ijk - nz*ny;
+					tripletList.push_back(Eigen::Triplet<double>(ijk, jj,
+							weit[0]));
+
+					assert(ijk > nz);
+					jj = ijk - nz;
+					tripletList.push_back(Eigen::Triplet<double>(ijk, jj,
+							weit[1]));
+
+					assert(ijk > 1);
+					jj = ijk - 1;
+					tripletList.push_back(Eigen::Triplet<double>(ijk, jj,
+							weit[2]));
+
+					assert(ijk + 1 < n);
+					jj = ijk + 1;
+					tripletList.push_back(Eigen::Triplet<double>(ijk, jj,
+							weit[3]));
+
+					assert(ijk + nz < n);
+					jj = ijk + nz;
+					tripletList.push_back(Eigen::Triplet<double>(ijk, jj,
+							weit[4]));
+
+					assert(ijk + nz*ny < n);
+					jj = ijk + nz*ny;
+					tripletList.push_back(Eigen::Triplet<double>(ijk, jj,
+							weit[5]));
+				}
+
+				phi_flat(ijk) = phi(i,j,k);
+			}
+		}
+	}
+
+	Eigen::SparseMatrix<double> A(n, n);
+	A.setFromTriplets(tripletList.begin(), tripletList.end());
+	A.makeCompressed();
+
+   //
+   //  bi conjugate gradient stabilized solver for sparse square problems.
+   //    http://en.wikipedia.org/wiki/Biconjugate_gradient_method
+   //
+	Eigen::BiCGSTAB<Eigen::SparseMatrix<double>, Eigen::IdentityPreconditioner> solver(A);
+	solver.setMaxIterations(iter);
+	solver.setTolerance(tol);
+
+	// KTS Note -- I remember being here writing the unit tests, and thinking
+	// that this may have had something to do with the difference in the elec
+	// energies.  I don't remember the details, but it's something to do with
+	// the Eigen solver being different from what is in the Fortran code.
+	// phi_flat = solver.solveWithGuess(bgf.baseInterface(), phi_flat);
+   // ERJ Note -- Fortran solver:
+   // http://sdphca.ucsd.edu/slatec_top/source/dsluom.f (DSLUOM is the
+   // Incomplete LU Orthomin Sparse Iterative Ax=b Solver.)
+	phi_flat = solver.solve(bgf.baseInterface());
+
+	for(size_t i = 1; i <= nx; ++i) {
+		for(size_t j = 1; j <= ny; ++j) {
+			for(size_t k = 1; k <= nz; ++k) {
+				size_t ijk = (i-1)*nz*ny + (j-1)*nz + k-1;
+				phi(i,j,k) = phi_flat(ijk);
+			}
+		}
+	}
+}
+
