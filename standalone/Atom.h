@@ -66,6 +66,7 @@ class Atom
       //
       //  for debugging
       //
+      void print() const;
 };
 
 class AtomList
@@ -91,6 +92,8 @@ class AtomList
       void changeChargeDistribution 
          ( Mat<>& charget, Mat<>& corlocqt, Mat< size_t>& loc_qt,
            const ComData& comData ) const;
+
+      void print() const;
 };
 
 #endif
