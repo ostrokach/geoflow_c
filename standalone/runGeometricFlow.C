@@ -143,7 +143,7 @@ int main( int argc, char *argv[] )
    //  Setup the geoflow solver
    //
    cout << "seting up..." << endl ;
-   GF.setup( AL );
+   GF.run( AL );
    
 
 

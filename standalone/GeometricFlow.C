@@ -237,11 +237,18 @@ void GeometricFlow::setup( const AtomList& atomList )
 		yhsurface(atomList, tott, deltat, phix, surfu, iloop, area,
    			    volume, attint, p_alpha, p_iadi, igfin, lj_roro, lj_conms);
 		normalizeSurfuAndEps(surfu, eps); 
+      //cout << "surfu: " ; surfu.print(); std::cout << std::endl ;
+      //cout << "eps: " ; eps.print(); std::cout << std::endl ;
+      //cout << "charget: " ; charget.print(); std::cout << std::endl ;
+      //cout << "corlocqt: " ; corlocqt.print(); std::cout << std::endl ;
 
 		if (iloop == 1) {
 			seteqb(bg, atomList, charget, corlocqt );
 		}
 
+      //
+      //  call the PB Solver!
+      //
 		int iter = 1000;
 		double fpb, titer = 0.0;
 		pbsolver(eps, phi, bg, p_tol, iter);
@@ -259,6 +266,7 @@ void GeometricFlow::setup( const AtomList& atomList )
 		if (iloop == 1) {
 			pbsolver(eps, phivoc, bg, p_tol, iter);
 		}
+
 
 		for (size_t ix = 2; ix <= p_comdata.nx() - 1; ix++) {
 			for (size_t iy = 2; iy <= p_comdata.ny() - 1; iy++) {
@@ -280,6 +288,7 @@ void GeometricFlow::setup( const AtomList& atomList )
 		cout << "iloop = " << iloop << std::endl;
 		double soleng1, soleng2;
 		soleng1 = soleng2 = 0.0;
+      //cout << "phi: " ; phi.print(); cout << endl;
 		computeSoleng(soleng1, phi, charget, loc_qt);
 		computeSoleng(soleng2, phivoc, charget, loc_qt);
 		std::cout << "soleng1 = " << soleng1 << std::endl;
@@ -291,7 +300,6 @@ void GeometricFlow::setup( const AtomList& atomList )
 		if (iloop > 1) {
 			diffEnergy = fabs((solv[iloop - 1] - solv[iloop - 2]));
 		}
-      
       // print the solvation energies by loop index; want to only print
       // the last two energies???  this prints them all.
       for (int i = 0; i < iloop; i++ )
@@ -650,7 +658,8 @@ void GeometricFlow::computeSoleng(double& soleng,
 //
 // seteqb
 //
-void GeometricFlow::seteqb(Mat<>& bg, const AtomList& AL, Mat<>& charget, Mat<>& corlocqt)
+void GeometricFlow::seteqb(Mat<>& bg, const AtomList& AL, 
+      const Mat<>& charget, const Mat<>& corlocqt)
 {
    double sum = 0.0;
    for (size_t i = 1; i <= p_comdata.nx(); ++i) 
@@ -660,6 +669,7 @@ void GeometricFlow::seteqb(Mat<>& bg, const AtomList& AL, Mat<>& charget, Mat<>&
          for (size_t k = 1; k <= p_comdata.nz(); ++k)
          {
             double fp = qb( i, j, k, AL, charget, corlocqt );
+            //std::cout << "fp: " << fp << std::endl ;
             int ijk = (i-1) * p_comdata.ny() * 
                p_comdata.nz() + (j-1) * p_comdata.nz() + k - 1;
             bg[ijk] = fp;
@@ -675,17 +685,25 @@ void GeometricFlow::seteqb(Mat<>& bg, const AtomList& AL, Mat<>& charget, Mat<>&
 //  qb
 //
 double GeometricFlow::qb( size_t i,size_t j,size_t k, const AtomList& AL,
-      Mat<>& charget, Mat<>& corlocqt )
+      const Mat<>& charget, const Mat<>& corlocqt )
 {
    double x = p_comdata.xvalue(i);
    double y = p_comdata.yvalue(j);
    double z = p_comdata.zvalue(k);
+   //std::cout << "x,y,z: " << x << ", " << y << ", " << z << std::endl;
    if(i < 2 || i > p_comdata.nx() - 1 ||
          j < 2 || j > p_comdata.ny() - 1 ||
-         k < 2 || k > p_comdata.nz() - 1) {
-      return qbboundary( x, y, z, AL );
+         k < 2 || k > p_comdata.nz() - 1) 
+   {
+      double foo = qbboundary( x, y, z, AL );
+      //std::cout << "foo: " << foo << std::endl;
+      
+      return foo; //qbboundary( x, y, z, AL );
    } else {
-      return qbinterior( x, y, z, charget, corlocqt );
+      double bar = qbinterior( x, y, z, charget, corlocqt );
+      //std::cout << "bar: " << bar << std::endl;
+      
+      return bar ; //qbinterior( x, y, z, charget, corlocqt );
    }
 }
 
@@ -700,9 +718,17 @@ double GeometricFlow::qbboundary( double x, double y, double z,
       double x_q = x - atomList.get(a).x(); //xyzr[a][1];
       double y_q = y - atomList.get(a).y(); //xyzr[a][2];
       double z_q = z - atomList.get(a).z(); //xyzr[a][3];
+      //std::cout << "atomList: " 
+      //   << atomList.get(a).x() << ", " 
+      //   << atomList.get(a).y() << ", " 
+      //   << atomList.get(a).z() << endl; 
+      //std::cout << "x_q,y_q,z_q: " << x_q << ", " 
+      //   << y_q << ", " << z_q << std::endl;
       double q_q = atomList.get(a).pqr(); //pqr[a];
+      //std::cout << "q_q: " << q_q << std::endl;
       double rr = sqrt( dot(x_q, y_q, z_q) );
       vbdn += q_q/( p_epsilons * rr );
+      //std::cout << "epsilons: " << p_epsilons << std::endl;
    }
    return vbdn;
 }
@@ -710,7 +736,8 @@ double GeometricFlow::qbboundary( double x, double y, double z,
 //
 //  qbinterior
 //
-double GeometricFlow::qbinterior(double x, double y, double z, Mat<>& charget, Mat<>& corlocqt)
+double GeometricFlow::qbinterior(double x, double y, double z,
+      const Mat<>& charget, const Mat<>& corlocqt)
 {
    double fp = 0;
    for (size_t a = 1; a <= charget.nx(); ++a) {
@@ -734,6 +761,8 @@ double GeometricFlow::qbinterior(double x, double y, double z, Mat<>& charget, M
 //
 void GeometricFlow::pbsolver(Mat<>& eps, Mat<>& phi, Mat<>& bgf, double tol, int iter)
 {
+   //cout << "eps: " ; eps.print(); std::cout << std::endl ;
+   //cout << "bgf: " ; bgf.print(); std::cout << std::endl ;
 	size_t nx = eps.nx(), ny = eps.ny(), nz = eps.nz();
 	double dx = p_comdata.deltax(), 
           dy = p_comdata.deltay(), 
@@ -814,6 +843,7 @@ void GeometricFlow::pbsolver(Mat<>& eps, Mat<>& phi, Mat<>& bgf, double tol, int
 	Eigen::SparseMatrix<double> A(n, n);
 	A.setFromTriplets(tripletList.begin(), tripletList.end());
 	A.makeCompressed();
+   //std::cout << "A: " << A << std::endl;  ??
 
    //
    //  bi conjugate gradient stabilized solver for sparse square problems.
@@ -832,6 +862,7 @@ void GeometricFlow::pbsolver(Mat<>& eps, Mat<>& phi, Mat<>& bgf, double tol, int
    // http://sdphca.ucsd.edu/slatec_top/source/dsluom.f (DSLUOM is the
    // Incomplete LU Orthomin Sparse Iterative Ax=b Solver.)
 	phi_flat = solver.solve(bgf.baseInterface());
+   //std::cout << "phi_flat: " << phi_flat << std::endl;
 
 	for(size_t i = 1; i <= nx; ++i) {
 		for(size_t j = 1; j <= ny; ++j) {

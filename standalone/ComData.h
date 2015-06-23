@@ -60,8 +60,8 @@ class ComData
       double pi() const { return p_pi; }
 
       double deltax() const { return p_deltax; }
-      double deltay() const { return p_deltax; }
-      double deltaz() const { return p_deltax; }
+      double deltay() const { return p_deltay; }
+      double deltaz() const { return p_deltaz; }
 
       void setBounds( double xleft, double xright,
                       double yleft, double yright,

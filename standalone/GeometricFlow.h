@@ -125,15 +125,16 @@ class GeometricFlow
       void computeSoleng(double& soleng, 
                    Mat<>& phi, Mat<>& charget, Mat<size_t>& loc_qt);
 
-      void seteqb( Mat<>& bg, const AtomList& al, Mat<>& charget, Mat<>& corlocqt);
+      void seteqb( Mat<>& bg, const AtomList& al, const Mat<>& charget,
+            const Mat<>& corlocqt);
 
       double qb(size_t i,size_t j,size_t k, const AtomList& al,
-            Mat<>& charget, Mat<>& corlocqt );
+            const Mat<>& charget, const Mat<>& corlocqt );
       
       double qbboundary( double x, double y, double z, const AtomList& al );
       
       double qbinterior(double x, double y, double z, 
-            Mat<>& charget, Mat<>& corlocqt);
+            const Mat<>& charget, const Mat<>& corlocqt);
 
       void pbsolver(Mat<>& eps, Mat<>& phi, Mat<>& bgf, double tol, int iter);
 
@@ -205,7 +206,7 @@ class GeometricFlow
       //
       void printAllParams();
 
-      void setup( const AtomList& atomList );
+      void run( const AtomList& atomList );
       
 
 
