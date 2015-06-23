@@ -72,7 +72,7 @@ double getVar( std::string var_name,
    }
    catch ( std::exception e ) 
    { 
-      std::cout<< "Warning: " << var_name << " not found." << std::endl ; 
+     // std::cout<< "Warning: " << var_name << " not found." << std::endl ; 
    }
    return var_val;
 }
@@ -108,7 +108,7 @@ int main( int argc, char *argv[] )
        boost::property_tree::ini_parser::read_ini(param_filename, pt);
 
        double expval = getVar( "Geoflow.exper_val", pt, GF.getExperValue() ) ;
-       GF.setPressure( expval );
+       GF.setExperValue( expval );
 
        double pres_i = getVar( "Geoflow.pres_i", pt, GF.getPressure() ) ;
        GF.setPressure( pres_i );

@@ -1,4 +1,5 @@
 #include "GeometricFlow.h"
+#include "Mat.h"
 
 using namespace std;
 
@@ -139,6 +140,10 @@ void printAllParams()
 {
 }
 
+//template class Mat<double>;
+//template
+//std::ostream& operator<< <double> ( std::ostream& os, const Mat<double>& M);
+
 void GeometricFlow::setup( const AtomList& atomList )
 {
    //
@@ -159,6 +164,8 @@ void GeometricFlow::setup( const AtomList& atomList )
 	Mat<> corlocqt(natm, 8, 3);
 	Mat<size_t> loc_qt(natm,8,3);
    atomList.changeChargeDistribution( charget, corlocqt, loc_qt, p_comdata );
+   //atomList.print();
+   //cout<< "test: " ; p_comdata.print(); cout << endl ;
 
    //
    //  compute nx, ny, nz
@@ -204,6 +211,7 @@ void GeometricFlow::setup( const AtomList& atomList )
    double lj_roro = p_density / p_gama_i;
    double lj_conms = p_pres_i / p_gama_i;
    int igfin = 1;
+   //std::cout << "blahh: " << p_pres_i << " " << p_gama_i << std::endl;
 
    //
    // iteration coupling surface generation and poisson solver
@@ -216,7 +224,7 @@ void GeometricFlow::setup( const AtomList& atomList )
          deltat =
             pow(p_comdata.deltax()*p_comdata.deltay()*p_comdata.deltaz(), 2.0/3.0)/4.5;
       }
-      std::cout << "deltat = " << deltat << std::endl;
+      //std::cout << "deltat = " << deltat << std::endl;
 
       double totnow = p_tottf - iloop + 1;
       if (totnow > 1.0) {
@@ -236,7 +244,7 @@ void GeometricFlow::setup( const AtomList& atomList )
 
 		int iter = 1000;
 		double fpb, titer = 0.0;
-//		pbsolver(eps, phi, bg, tol, iter);
+		pbsolver(eps, phi, bg, p_tol, iter);
 		if (iloop == 1) {
 			fpb = titer;
 			iterf = iter;
@@ -249,7 +257,7 @@ void GeometricFlow::setup( const AtomList& atomList )
       //
 		eps = p_epsilonp;
 		if (iloop == 1) {
-//			pbsolver(eps, phivoc, bg, tol, iter);
+			pbsolver(eps, phivoc, bg, p_tol, iter);
 		}
 
 		for (size_t ix = 2; ix <= p_comdata.nx() - 1; ix++) {
@@ -367,6 +375,8 @@ void GeometricFlow::yhsurface( const AtomList& atomList,
 	initial(xl, yl, zl, natm, atom_x,atom_y, atom_z, atom_r, g, su);
 	if (iloop > 1 && igfin == 1)
 		su = surfu;
+   //cout << "test2: " ; su.print(); cout << endl ;
+   //cout << "test2: " ; g.print(); cout << endl ;
 
 	double rcfactor = (p_ffmodel == 1) ? 1.0 : pow(2.0, 1.0/6.0);
 	std::valarray<double> sigma(atom_r);
@@ -400,9 +410,11 @@ void GeometricFlow::yhsurface( const AtomList& atomList,
 	if (p_lj_iwca == 1)
 		potr = 0;
 
+   //cout << conms << " " << roro << endl ;
 	for (size_t i = 0; i < phitotx.size(); ++i) {
 		phitotx[i] = -conms - phitotx[i] + roro*(potr[i] + pota[i]);
 	}
+   //cout << "test2: " ; phitotx.print(); cout << endl ;
 
 	if (iadi == 0 || iloop > 1) {
 		int nt = ceil(tott/dt) + 1;
@@ -411,6 +423,7 @@ void GeometricFlow::yhsurface( const AtomList& atomList,
 		std::cerr << "ADI not implemented..." << std::endl;
 		exit(1);
 	}
+   //cout << "test2: " ; su.print(); cout << endl ;
 
 	if (iloop > 1) {
 		for (size_t i = 0; i < surfu.size(); ++i) {
@@ -420,6 +433,9 @@ void GeometricFlow::yhsurface( const AtomList& atomList,
 	} else {
 		surfu = su;
 	}
+
+//   cout << "alpha: " << alpha << endl;
+//   cout << "test2: " ; su.print(); cout << endl ;
 
 	volume = volumeIntegration(su);
 	std::cout << "volume = " << volume << std::endl;
@@ -454,7 +470,7 @@ void GeometricFlow::yhsurface( const AtomList& atomList,
 	}
 
 	attint = volumeIntegration(fintegr);
-	std::cout << "attint = " << attint << std::endl;
+	//std::cout << "attint = " << attint << std::endl;
 }
 
 

@@ -94,7 +94,21 @@ class ComData
       size_t invery(double y) const { return size_t( (y - p_yleft)/p_deltay ) + 1; }
       size_t inverz(double z) const { return size_t( (z - p_zleft)/p_deltaz ) + 1; }
 
-
+      void print() const
+      {
+         cout << "nx, ny, nz: " << p_nx 
+            << ", " << p_ny << ", " << p_nz << endl;
+         cout << "xleft, xright: " << p_xleft << ", " << p_xright <<
+            endl;
+         cout << "yleft, yright: " << p_yleft << ", " << p_yright <<
+            endl;
+         cout << "zleft, zright: " << p_zleft << ", " << p_zright <<
+            endl;
+         cout << "deltax, deltay, deltaz: " << p_deltax 
+            << ", " << p_deltay << ", " << p_deltaz << endl;
+         //cout << "dcel, pi: " << comdata.dcel << ", " << comdata.pi << std::endl;
+      }
+  
 };
 
 

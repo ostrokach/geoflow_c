@@ -48,15 +48,17 @@ Atom::Atom( const Atom& A )
    p_y = A.p_y;
    p_z = A.p_z;
    p_radius = A.p_radius;
+   p_pqr = A.p_pqr;
    p_ljepsilon = A.p_ljepsilon;
 }
 
-Atom::Atom( const Atom* A )
+Atom::Atom( const Atom* A ) 
 {
    p_x = A->p_x;
    p_y = A->p_y;
    p_z = A->p_z;
    p_radius = A->p_radius;
+   p_pqr = A->p_pqr;
    p_ljepsilon = A->p_ljepsilon;
 }
 
@@ -74,6 +76,15 @@ Atom::Atom( const Atom* A )
    return os;
 }
 */
+void Atom::print() const
+{
+   cout << p_x << ", "
+      << p_y << ", "
+      << p_z << "; "
+      << p_radius << ", "
+      << p_pqr << ", "
+      << p_ljepsilon << endl ;
+}
 
 
 AtomList::AtomList( string xyzr_file, const double radexp, const int ffmodel )
@@ -275,6 +286,12 @@ void AtomList::changeChargeDistribution
       }
 
    }
+}
+
+void AtomList::print() const
+{
+   for(unsigned int i = 0; i < p_atomList.size(); i++)
+      p_atomList[ i ].print();
 }
 
 
