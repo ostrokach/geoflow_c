@@ -32,8 +32,8 @@ class GeometricFlow
       //
       //int nmol = 17,	
       double p_expervalue;
-      double p_pres_i;
-      double p_gama_i;
+      double p_press;
+      double p_gamma;
       int    p_npiter;
       int    p_ngiter;
       double p_tauval;
@@ -50,7 +50,7 @@ class GeometricFlow
       // 1,		// IPBIN
       double p_tol;
       double p_tottf;
-      double p_dcel;
+      double p_grid;
       int    p_maxstep;
       double p_epsilons;
       double p_epsilonp;
@@ -58,7 +58,7 @@ class GeometricFlow
       double p_crevalue;
       // 0,		// idacsl
       double p_density;
-      double p_foo;  // MAGIC_FOO
+      double p_holst_energy_unit;
 
       ComData p_comdata;
 
@@ -162,9 +162,9 @@ class GeometricFlow
       //
       void setExperValue( double exper_val ) { p_expervalue = exper_val; }
 
-      void setPressure( double pres_i ) { p_pres_i = pres_i; }
+      void setPressure( double pres_i ) { p_press = pres_i; }
       
-      void setGama( double gama_i ) { p_gama_i = gama_i; }
+      void setGama( double gama_i ) { p_gamma = gama_i; }
       
       void setFFModel( int ffmodel ) { p_ffmodel = ffmodel; }
 
@@ -177,6 +177,8 @@ class GeometricFlow
       
       void setEpsilonP( double epsilonp ) { p_epsilonp = epsilonp; }
 
+      void setGrid( double grid ) { p_grid = grid ; }
+
       // uncomment if needed:
       //void setNPiter( int npiter ) { p_npiter = npiter; }
       //void setNGiter( int ngiter ) { p_ngiter = ngiter; }
@@ -185,9 +187,9 @@ class GeometricFlow
 
       double getExperValue() { return p_expervalue; }
 
-      double getPressure() { return p_pres_i; }
+      double getPressure() { return p_press; }
       
-      double getGama() { return p_gama_i; }
+      double getGama() { return p_gamma; }
       
       int getFFModel() { return p_ffmodel; }
 
@@ -200,6 +202,10 @@ class GeometricFlow
       double getEpsilonP() { return p_epsilonp; }
 
       double getRadExp() { return p_radexp; }
+
+      double getGrid() { return p_grid; }
+
+      void write() const ;
 
       //
       //  for debugging

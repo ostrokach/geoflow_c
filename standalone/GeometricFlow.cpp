@@ -5,8 +5,8 @@ using namespace std;
 
 GeometricFlow::GeometricFlow( )
 {
-   p_pres_i = 0.008;
-   p_gama_i = 0.0001;
+   p_press = 0.008;
+   p_gamma = 0.0001;
    p_npiter = 1;
    p_ngiter = 1;
 
@@ -42,15 +42,15 @@ GeometricFlow::GeometricFlow( )
      // idacsl //idacsl: 0 for solvation force calculation; 1 or accuracy test
    p_density = 0.03346;
 
-   p_dcel = 0.25;  // distance per cell - grid spacing
-   p_comdata.init( p_dcel );
-   //p_comdata_deltax = p_dcel;
-   //p_comdata_deltay = p_dcel;
-   //p_comdata_deltaz = p_dcel;
+   p_grid = 0.25;  // distance per cell - grid spacing
+   p_comdata.init( p_grid );
+   //p_comdata_deltax = p_grid;
+   //p_comdata_deltay = p_grid;
+   //p_comdata_deltaz = p_grid;
    //p_comdata_pi = acos(-1.0);  //Pi
 
-   // http://ccom.ucsd.edu/~mholst/pubs/dist/Hols94d.pdf (page 12)
-   p_foo = 332.06364;  // TODO: WTH did this come from???
+   // http://ccom.ucsd.edu/~mholst/pubs/dist/Hols94d.pdf (see page 12)
+   p_holst_energy_unit = 332.06364;
 
    p_lj_iosetar = 1;
    p_lj_iosetaa = 1;
@@ -67,8 +67,8 @@ GeometricFlow::GeometricFlow( )
 GeometricFlow::GeometricFlow( const GeometricFlow& gf )
 {
    p_expervalue = gf.p_expervalue;
-   p_pres_i = gf.p_pres_i;
-   p_gama_i = gf.p_gama_i;
+   p_press = gf.p_press;
+   p_gamma = gf.p_gamma;
    p_npiter = gf.p_npiter;
    p_ngiter = gf.p_ngiter;
    p_tauval = gf.p_tauval;
@@ -89,7 +89,7 @@ GeometricFlow::GeometricFlow( const GeometricFlow& gf )
    p_crevalue = gf.p_crevalue;
    p_density = gf.p_density;
 
-   p_dcel = gf.p_dcel;
+   p_grid = gf.p_grid;
    p_comdata_deltax = gf.p_comdata_deltax;
    p_comdata_deltax = gf.p_comdata_deltay;
    p_comdata_deltax = gf.p_comdata_deltaz;
@@ -99,8 +99,8 @@ GeometricFlow::GeometricFlow( const GeometricFlow& gf )
 GeometricFlow::GeometricFlow( const GeometricFlow* gf )
 {
    p_expervalue = gf->p_expervalue;
-   p_pres_i = gf->p_pres_i;
-   p_gama_i = gf->p_gama_i;
+   p_press = gf->p_press;
+   p_gamma = gf->p_gamma;
    p_npiter = gf->p_npiter;
    p_ngiter = gf->p_ngiter;
    p_tauval = gf->p_tauval;
@@ -121,7 +121,7 @@ GeometricFlow::GeometricFlow( const GeometricFlow* gf )
    p_crevalue = gf->p_crevalue;
    p_density = gf->p_density;
 
-   p_dcel = gf->p_dcel;
+   p_grid = gf->p_grid;
    p_comdata_deltax = gf->p_comdata_deltax;
    p_comdata_deltax = gf->p_comdata_deltay;
    p_comdata_deltax = gf->p_comdata_deltaz;
@@ -168,27 +168,6 @@ void GeometricFlow::run( const AtomList& atomList )
    //cout<< "test: " ; p_comdata.print(); cout << endl ;
 
    //
-   //  compute nx, ny, nz
-   //
-   /*
-	vector< double > xc( p_comdata.nx() );
-	for (int i=0; i < p_comdata.nx(); i++) {
-		xc[i] = p_comdata.xleft() + (i-1) * p_dcel;
-	}
-
-	vector< double > yc( p_comdata.ny() );
-	for (int i=0; i < p_comdata.ny(); i++) {
-		yc[i] = p_comdata.yleft() + (i-1) * p_dcel;
-	}
-
-	vector< double > zc( p_comdata.nz() );
-	for (int i=0; i < p_comdata.nz(); i++) {
-		zc[i] = p_comdata.zleft() + (i-1) * p_dcel;
-	}
-   */
-
-
-   //
    //  setup phi
    //
 	Mat<> phi( p_comdata.nx(), p_comdata.ny(), p_comdata.nz(),
@@ -207,11 +186,11 @@ void GeometricFlow::run( const AtomList& atomList )
 	double elec = 0.0, area = 0.0, volume = 0.0, attint = 0.0;
    double tpb = 0.0;  // time step calculation for total pb
    int iterf = 0, itert = 0; // iteration num for first iteration and total
-   double potcoe = 1.0 / p_gama_i;
-   double lj_roro = p_density / p_gama_i;
-   double lj_conms = p_pres_i / p_gama_i;
+   double potcoe = 1.0 / p_gamma;
+   double lj_roro = p_density / p_gamma;
+   double lj_conms = p_press / p_gamma;
    int igfin = 1;
-   //std::cout << "blahh: " << p_pres_i << " " << p_gama_i << std::endl;
+   //std::cout << "blahh: " << p_press << " " << p_gamma << std::endl;
 
    //
    // iteration coupling surface generation and poisson solver
@@ -237,7 +216,7 @@ void GeometricFlow::run( const AtomList& atomList )
 		yhsurface(atomList, tott, deltat, phix, surfu, iloop, area,
    			    volume, attint, p_alpha, p_iadi, igfin, lj_roro, lj_conms);
 		normalizeSurfuAndEps(surfu, eps); 
-      // Keith wants surfu printed.
+      // Keith wants surfu printed into a dx file
       //cout << "surfu: " ; surfu.print(); std::cout << std::endl ;
       //cout << "eps: " ; eps.print(); std::cout << std::endl ;
       //cout << "charget: " ; charget.print(); std::cout << std::endl ;
@@ -295,8 +274,8 @@ void GeometricFlow::run( const AtomList& atomList )
 		std::cout << "soleng1 = " << soleng1 << std::endl;
 		std::cout << "soleng2 = " << soleng2 << std::endl;
 		//std::cout << "soleng2 is too small!!" << std::endl;  // why is this here?
-		elec = (soleng1 - soleng2) * p_foo;
-		solv[iloop - 1] = elec + p_gama_i * (area + volume * lj_conms + attint *
+		elec = (soleng1 - soleng2) * p_holst_energy_unit;
+		solv[iloop - 1] = elec + p_gamma * (area + volume * lj_conms + attint *
 				lj_roro);
 		if (iloop > 1) {
 			diffEnergy = fabs((solv[iloop - 1] - solv[iloop - 2]));
@@ -313,7 +292,7 @@ void GeometricFlow::run( const AtomList& atomList )
 
 
 	double sumpot = area + volume * lj_conms + attint * lj_roro;
-	double nonpolarSolvation = sumpot*p_gama_i;
+	double nonpolarSolvation = sumpot*p_gamma;
 	double totalSolvation = nonpolarSolvation + elec;
    cout << "totalSolv:\t" << totalSolvation << "\t";
    cout << "nonpolar: " << nonpolarSolvation << "\t";
@@ -875,3 +854,6 @@ void GeometricFlow::pbsolver(Mat<>& eps, Mat<>& phi, Mat<>& bgf, double tol, int
 	}
 }
 
+void GeometricFlow::write()
+{
+}
