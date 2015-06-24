@@ -75,6 +75,7 @@ struct Comdata
 };
 extern Comdata comdata;
 
+
 struct LJ
 {
 	double tauval, prob, vdwdispersion, sigmas, roro, conms, density, epsilonw;

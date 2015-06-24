@@ -72,8 +72,10 @@
  *   calculated.
  */
 void chargedist(double xyzr[MAXATOMS][XYZRWIDTH],
-double* chratm, Mat<>& charget, Mat<>& corlocqt, Mat<size_t>& loc_qt,
-		size_t iatm){
+                double* chratm, 
+                Mat<>& charget, Mat<>& corlocqt, Mat<size_t>& loc_qt,
+		          size_t iatm)
+{
 	double x_q = xyzr[iatm-1][0];
 	double y_q = xyzr[iatm-1][1];
 	double z_q = xyzr[iatm-1][2];
@@ -83,8 +85,8 @@ double* chratm, Mat<>& charget, Mat<>& corlocqt, Mat<size_t>& loc_qt,
 	int j_q = invery(y_q);
 	int k_q = inverz(z_q);
 
-	// std::cout << x_q << "," << y_q << "," << z_q << " " << i_q << "," << j_q
-	// 	<< "," << k_q << std::endl;
+   //std::cout << x_q << "," << y_q << "," << z_q << "; " << q_q << std::endl;
+   //std::cout << "-- " << i_q << "," << j_q << "," << k_q << std::endl;
 
 
 	Mat<size_t> loc_q(8,3);
@@ -142,7 +144,8 @@ double* chratm, Mat<>& charget, Mat<>& corlocqt, Mat<size_t>& loc_qt,
 				}
 			}
 		}
-	} else if ((xd1 != 0 && yd1 != 0) || (xd1 != 0 && zd1 != 0) ||
+	} 
+   else if ((xd1 != 0 && yd1 != 0) || (xd1 != 0 && zd1 != 0) ||
 					(yd1 != 0 && zd1 != 0)) {
 		if (xd1 == 0) {
 			for (int j = 0; j <= 1; ++j) {
@@ -152,7 +155,8 @@ double* chratm, Mat<>& charget, Mat<>& corlocqt, Mat<size_t>& loc_qt,
 					charge[4*j + 2*k] = 1.0/fabs(yd*zd);
 				}
 			}
-		} else if (yd1 == 0) {
+		} 
+      else if (yd1 == 0) {
 			for (int i = 0; i <= 1; ++i) {
 				for (int k = 0; k <= 1; ++k) {
 					double xd = i*comdata.deltax - xd1;
@@ -160,7 +164,8 @@ double* chratm, Mat<>& charget, Mat<>& corlocqt, Mat<size_t>& loc_qt,
 					charge[i + 4*k] = 1.0/fabs(xd*zd);
 				}
 			}
-		} else if (zd1 == 0) {
+		} 
+      else if (zd1 == 0) {
 			for (int i = 0; i <= 1; ++i){
 				for (int j = 0; j <= 1; ++j){
 					double xd = i*comdata.deltax - xd1;
@@ -169,22 +174,26 @@ double* chratm, Mat<>& charget, Mat<>& corlocqt, Mat<size_t>& loc_qt,
 				}
 			}
 		}
-	} else if (xd1 != 0 || yd1 != 0 || zd1 != 0 ) {
+	} 
+   else if (xd1 != 0 || yd1 != 0 || zd1 != 0 ) {
 		if (xd1 != 0) {
 			charge[0] = 1.0/xd1;
 			charge[1] = 1.0/(comdata.deltax-xd1);
-		} else if (yd1 != 0) {
+		} 
+      else if (yd1 != 0) {
 			charge[0] = 1.0/yd1;
 			charge[2] = 1.0/(comdata.deltay-yd1);
-		} else if (zd1 != 0) {
+		} 
+      else if (zd1 != 0) {
 			charge[0] = 1.0/zd1;
 			charge[4] = 1.0/(comdata.deltaz-zd1);
 		}
-	} else {
+	} 
+   else {
 		charge[0] = 1.0;
 	}
 
-	charge=q_q*charge/charge.sum();
+	charge = q_q*charge / charge.sum();
 
 	for (size_t j = 1; j <= charget.ny(); ++j) {
 		charget(iatm,j) = charge[j-1];

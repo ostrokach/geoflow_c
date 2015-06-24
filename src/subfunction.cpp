@@ -62,12 +62,18 @@ double qbboundary(size_t natm, double x,double y,double z,
 {
 	double vbdn = 0;
 	for (size_t a = 0; a < natm; ++a) {
-		double x_q = x - xyzr[a][1];
-		double y_q = y - xyzr[a][2];
-		double z_q = z - xyzr[a][3];
+		double x_q = x - xyzr[a][0];
+		double y_q = y - xyzr[a][1];
+		double z_q = z - xyzr[a][2];
+      //std::cout << "xyzr: " << xyzr[a][1] << ", " 
+      //   << xyzr[a][2] << ", " << xyzr[a][3] << std::endl;
+      //std::cout << "x_q,y_q,z_q: " << x_q << ", " 
+      //   << y_q << ", " << z_q << std::endl;
 		double q_q = pqr[a];
+      //std::cout << "q_q: " << q_q << std::endl;
 		double rr = sqrt(dot(x_q, y_q, z_q));
 		vbdn += q_q/(epsilonsp*rr);
+      //std::cout << "epsilonsp: " << epsilonsp << std::endl;
 	}
 	return vbdn;
 }
@@ -97,12 +103,18 @@ double qb(size_t i,size_t j,size_t k, double xyzr[MAXATOMS][XYZRWIDTH],
 	double x = xvalue(i);
 	double y = yvalue(j);
 	double z = zvalue(k);
+   //std::cout << "x,y,z: " << x << ", " << y << ", " << z << std::endl;
 	if(i < 2 || i > comdata.nx-1 ||
 			j < 2 || j > comdata.ny-1 ||
-			k < 2 || k > comdata.nz-1) {
-		return qbboundary(charget.nx(), x,y,z, xyzr, pqr, epsilonsp);
+			k < 2 || k > comdata.nz-1) 
+   {
+      double foo = qbboundary(charget.nx(), x,y,z, xyzr, pqr, epsilonsp); 
+      //std::cout << "foo: " << foo << std::endl;
+		return foo ; //qbboundary(charget.nx(), x,y,z, xyzr, pqr, epsilonsp);
 	} else {
-		return qbinterior(x,y,z, charget, corlocqt);
+      double bar = qbinterior(x,y,z, charget, corlocqt);
+      //std::cout << "bar: " << bar << std::endl;
+		return bar ;//qbinterior(x,y,z, charget, corlocqt);
 	}
 }
 
@@ -114,6 +126,7 @@ void seteqb(Mat<>& bg, double xyzr[MAXATOMS][XYZRWIDTH], double* pqr,
 		for (size_t j = 1; j <= comdata.ny; ++j) {
 			for (size_t k = 1; k <= comdata.nz; ++k) {
 				double fp = qb(i,j,k,xyzr,pqr,charget,corlocqt,epsilonsp);
+            //std::cout << "fp: " << fp << std::endl ;
 				int ijk = (i-1)*comdata.ny*comdata.nz + (j-1)*comdata.nz + k - 1;
 				bg[ijk] = fp;
 				sum += fp;

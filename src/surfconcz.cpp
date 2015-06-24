@@ -68,12 +68,23 @@ double right(const std::valarray<double>& pr, double h, double ev)
 	return ceil( (pr + ev).max()/h ) * h + ev;
 }
 
-void domainini(double xyzr[MAXATOMS][XYZRWIDTH], const size_t natm,
-		const double extvalue)
+void domainini(double xyzr[MAXATOMS][XYZRWIDTH], 
+               const size_t natm,
+		         const double extvalue)
 {
-	double dx = comdata.deltax, dy = comdata.deltay, dz = comdata.deltaz;
-	std::valarray<double> atom_x(natm), atom_y(natm), atom_z(natm), atom_r(natm);
-	for(size_t i = 0; i < natm; ++i) {
+	double dx = comdata.deltax, 
+          dy = comdata.deltay, 
+          dz = comdata.deltaz;
+   //std::cout << "dx, dy, dz: " << dx << ", " 
+   //          << dy << ", " << dz << std::endl ;
+	
+   std::valarray<double> atom_x(natm), 
+                         atom_y(natm),
+                         atom_z(natm), 
+                         atom_r(natm);
+
+	for(size_t i = 0; i < natm; ++i) 
+   {
 		atom_x[i] = xyzr[i][0];
 		atom_y[i] = xyzr[i][1];
 		atom_z[i] = xyzr[i][2];
@@ -232,6 +243,8 @@ void yhsurface(double xyzr[MAXATOMS][XYZRWIDTH], double* ljepsilon, size_t natm,
 	initial(xl, yl, zl, natm, atom_x,atom_y, atom_z, atom_r, g, su);
 	if (iloop > 1 && igfin == 1)
 		su = surfu;
+   //std::cout << "test2: " ; su.print(); std::cout << std::endl ;
+   //std::cout << "test2: " ; g.print(); std::cout << std::endl ;
 
 	double rcfactor = (lj.ffmodel == 1) ? 1.0 : pow(2.0, 1.0/6.0);
 	std::valarray<double> sigma(atom_r);
@@ -268,14 +281,17 @@ void yhsurface(double xyzr[MAXATOMS][XYZRWIDTH], double* ljepsilon, size_t natm,
 	for (size_t i = 0; i < phitotx.size(); ++i) {
 		phitotx[i] = -lj.conms - phitotx[i] + lj.roro*(potr[i] + pota[i]);
 	}
+   //std::cout << "test2: " ; phitotx.print(); std::cout << std::endl ;
+   
 
 	if (iadi == 0 || iloop > 1) {
 		int nt = ceil(tott/dt) + 1;
-		upwinding(dt, nt, g, su, phitotx);
+		upwinding(dt, nt, g, su, phitotx);  // geoflow math stuff in here
 	} else {
 		std::cerr << "ADI not implemented..." << std::endl;
 		exit(1);
 	}
+   //std::cout << "test2: " ; su.print(); std::cout << std::endl ;
 
 	if (iloop > 1) {
 		for (size_t i = 0; i < surfu.size(); ++i) {
@@ -286,7 +302,10 @@ void yhsurface(double xyzr[MAXATOMS][XYZRWIDTH], double* ljepsilon, size_t natm,
 		surfu = su;
 	}
 
-	volume = volumeIntegration(su);
+   //std::cout << "alpha: " << alpha << std::endl ;
+   //std::cout << "test2: " ; su.print(); std::cout << std::endl ;
+
+	volume = volumeIntegration(su);  // volume integration (write out su file)
 	std::cout << "volume = " << volume << std::endl;
 
 	Mat<> fintegr(nx,ny,nz);
@@ -320,6 +339,6 @@ void yhsurface(double xyzr[MAXATOMS][XYZRWIDTH], double* ljepsilon, size_t natm,
 	}
 
 	attint = volumeIntegration(fintegr);
-	std::cout << "attint = " << attint << std::endl;
+	//std::cout << "attint = " << attint << std::endl;
 }
 

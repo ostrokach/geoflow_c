@@ -63,6 +63,9 @@
 
 void pbsolver(Mat<>& eps, Mat<>& phi, Mat<>& bgf, double tol, int iter)
 {
+   //std::cout << "eps: " ; eps.print(); std::cout << std::endl ;
+   //std::cout << "bgf: " ; bgf.print(); std::cout << std::endl ;
+
 	size_t nx = eps.nx(), ny = eps.ny(), nz = eps.nz();
 	double dx = comdata.deltax, dy = comdata.deltay, dz = comdata.deltaz;
 
@@ -77,18 +80,22 @@ void pbsolver(Mat<>& eps, Mat<>& phi, Mat<>& bgf, double tol, int iter)
 		}
 	}
 
-	std::vector <Eigen::Triplet<double>> tripletList;
+	std::vector <Eigen::Triplet<double> > tripletList;
 	tripletList.reserve(nx*ny*nz);
 	Eigen::VectorXd phi_flat(nx*ny*nz);
 
 	size_t n = nx*ny*nz;
+   //std::cout << "phi: " << std::endl;
 	for (size_t i = 1; i <= nx; ++i) {
 		for (size_t j = 1; j <= ny; ++j) {
 			for(size_t k = 1; k <= nz; ++k) {
 				size_t ijk = (i-1)*nz*ny + (j-1)*nz + k-1;
-				if (i==1 || i==nx || j==1 || j==ny || k==1 || k==nz) {
+				if (i==1 || i==nx || j==1 || j==ny || k==1 || k==nz) 
+            {
 					tripletList.push_back(Eigen::Triplet<double>(ijk, ijk, 1.0));
-				} else {
+				} 
+            else 
+            {
 					double f = -(  (eps1(i,j,k) + eps1(i-1,j,k))/dx/dx
 								 + (eps2(i,j,k) + eps2(i,j-1,k))/dy/dy
 								 + (eps3(i,j,k) + eps3(i,j,k-1))/dz/dz );
@@ -132,16 +139,21 @@ void pbsolver(Mat<>& eps, Mat<>& phi, Mat<>& bgf, double tol, int iter)
 					tripletList.push_back(Eigen::Triplet<double>(ijk, jj,
 							weit[5]));
 				}
-
+            //std::cout << phi(i,j,k) << " " ;
 				phi_flat(ijk) = phi(i,j,k);
 			}
 		}
 	}
+   //std::cout << std::endl;
 
 	Eigen::SparseMatrix<double> A(n, n);
 	A.setFromTriplets(tripletList.begin(), tripletList.end());
 	A.makeCompressed();
 
+   //
+   //  bi conjugate gradient stabilized solver for sparse square problems.
+   //    http://en.wikipedia.org/wiki/Biconjugate_gradient_method
+   //
 	Eigen::BiCGSTAB<Eigen::SparseMatrix<double>, Eigen::IdentityPreconditioner> solver(A);
 	solver.setMaxIterations(iter);
 	solver.setTolerance(tol);
@@ -151,7 +163,11 @@ void pbsolver(Mat<>& eps, Mat<>& phi, Mat<>& bgf, double tol, int iter)
 	// energies.  I don't remember the details, but it's something to do with
 	// the Eigen solver being different from what is in the Fortran code.
 	// phi_flat = solver.solveWithGuess(bgf.baseInterface(), phi_flat);
+   // ERJ Note -- Fortran solver:
+   // http://sdphca.ucsd.edu/slatec_top/source/dsluom.f (DSLUOM is the
+   // Incomplete LU Orthomin Sparse Iterative Ax=b Solver.)
 	phi_flat = solver.solve(bgf.baseInterface());
+   //std::cout << "phi_flat: " << phi_flat << std::endl;
 
 	for(size_t i = 1; i <= nx; ++i) {
 		for(size_t j = 1; j <= ny; ++j) {
