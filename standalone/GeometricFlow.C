@@ -237,6 +237,7 @@ void GeometricFlow::setup( const AtomList& atomList )
 		yhsurface(atomList, tott, deltat, phix, surfu, iloop, area,
    			    volume, attint, p_alpha, p_iadi, igfin, lj_roro, lj_conms);
 		normalizeSurfuAndEps(surfu, eps); 
+      // Keith wants surfu printed.
       //cout << "surfu: " ; surfu.print(); std::cout << std::endl ;
       //cout << "eps: " ; eps.print(); std::cout << std::endl ;
       //cout << "charget: " ; charget.print(); std::cout << std::endl ;
@@ -478,7 +479,7 @@ void GeometricFlow::yhsurface( const AtomList& atomList,
 	}
 
 	attint = volumeIntegration(fintegr);
-	//std::cout << "attint = " << attint << std::endl;
+	std::cout << "attint = " << attint << std::endl;
 }
 
 
