@@ -144,7 +144,7 @@ void printAllParams()
 //template
 //std::ostream& operator<< <double> ( std::ostream& os, const Mat<double>& M);
 
-void GeometricFlow::setup( const AtomList& atomList )
+void GeometricFlow::run( const AtomList& atomList )
 {
    //
    //  initialize the domain

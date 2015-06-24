@@ -36,7 +36,7 @@ add_executable(osm main.cpp
 )
 
 add_executable(GeometricFlow 
-     runGeometricFlow.C
-     GeometricFlow.C
-     Atom.C
+     runGeometricFlow.cpp
+     GeometricFlow.cpp
+     Atom.cpp
 )
