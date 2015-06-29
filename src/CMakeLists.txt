@@ -3,7 +3,7 @@ cmake_minimum_required (VERSION 2.6)
 
 set( CMAKE_VERBOSE_MAKEFILE on )
 
-project (geoflow_standalone)
+project (geoflow_c)
 
 SET(geoflow_standalone_CMAKE_DIR "${geoflow_standalone_SOURCE_DIR}/cmake")
 
