@@ -18,7 +18,7 @@ include_directories( /usr/local/Cellar/eigen/3.2.4/include/eigen3/
 #		     ${GOOGLE_INCLUDE}
                     )
 
-#target_link_libraries(osm
+#target_link_libraries(geoflow
 #                      ${GOOGLE_LIBS}
 #			)
 
@@ -26,7 +26,7 @@ include_directories( /usr/local/Cellar/eigen/3.2.4/include/eigen3/
 #FIND_PACKAGE(Eigen3 REQUIRED)
 #include_directories( ${EIGEN3_INCLUDE_DIR} )
 
-add_executable(osm main.cpp
+add_executable(geoflow main.cpp
      cpbconcz2.cpp
      solvationsub.cpp
      modules.cpp

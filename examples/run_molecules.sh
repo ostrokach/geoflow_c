@@ -1,8 +1,8 @@
 #!/bin/csh
 
-set exec = '../standalone_build/osm'
-#set exec = '../standalone_release/osm'
-#set exec = '../standalone_oldEigen/osm'
+set exec = '../standalone_build/geoflow'
+#set exec = '../standalone_release/geoflow'
+#set exec = '../standalone_oldEigen/geoflow'
 
 $exec kts.xyzr          -9.81
 $exec imidazole.xyzr    -9.81
