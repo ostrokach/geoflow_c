@@ -19,28 +19,37 @@ GeometricFlow::GeometricFlow( )
 
    // SIGMAS: Angstrom (radius of water molecule based on LJ parameter sigma)
    p_sigmas = 1.5828;
-   // EPSILONW:  epsilon parameter of O (kcal/mol) of water molecule.
+   // EPSILONW:  epsilon parameter of O (kcal/mol) of water molecule...
+   // the Lennard-Jones well depth parameter for water.  Perhaps we could
+   // call it ljwell?
    p_epsilonw = 0.1554;
-   // VDWDISPERSION:  1(on) or 0 (off)- previously called REPULSIVE
+   // VDWDISPERSION:  1(on) or 0 (off)- previously called REPULSIVE.
+   // This is the option to include the dispersion force between solvent
+   // and solute molecules in non-polar contribution of solvation energy.
+   // It is different from the surface definition (i.e., van der Waals
+   // surface) which is critical to define the simulation domain)
    p_vdwdispersion = 0;
    // EXTVALUE:  (distance atom surface and box boundary)
    p_extvalue = 1.90;
-     // iprec
-     	// istep
+   // iprec
    // IPREC: flag to indicate the usage of preconditioner iprec =1 (yes); 0 (no)
+   // istep
    p_iadi = 0;
    // ALPHA: weight of previous solution to change the next solution in geometry flow
    p_alpha = 0.50;
      // IPBIN  //IPBIN: start guess for PB 1; inherit '0' - not used?
-   p_tol = 1e-4;
+   p_tol = 1e-4;  // tolerance for the Eigen pbsolver
    p_tottf = 3.5;
    p_maxstep = 20;
    p_epsilons = 80.00;
    p_epsilonp = 1.5;
    p_radexp = 1;
-   p_crevalue = 0.01;
-     // idacsl //idacsl: 0 for solvation force calculation; 1 or accuracy test
-   p_density = 0.03346;
+   p_etolSolvation = 0.01;  // formerly CREVALUE in the fortran and C code. Error
+                   // tolerance for the solvation difference values 
+
+   // idacsl //idacsl: 0 for solvation force calculation; 1 or accuracy test
+
+   p_density = 0.03346;  // bconc
 
    p_grid = 0.25;  // distance per cell - grid spacing
    p_comdata.init( p_grid );
@@ -55,6 +64,9 @@ GeometricFlow::GeometricFlow( )
    p_lj_iosetar = 1;
    p_lj_iosetaa = 1;
    p_lj_iwca = 1;
+
+   // change the boundary condition
+   p_boundaryType = MDH;
 
 }
 
@@ -147,7 +159,7 @@ void printAllParams()
 void GeometricFlow::run( const AtomList& atomList )
 {
    //
-   //  initialize the domain
+   //  initialize the domain - set up the grid size and length
    //
    domainInitialization( atomList );
 	std::cout << "dimensions:\t" << p_comdata.nx() << " " <<
@@ -195,7 +207,7 @@ void GeometricFlow::run( const AtomList& atomList )
    //
    // iteration coupling surface generation and poisson solver
    //
-   while ( (iloop < p_maxstep) && (diffEnergy > p_crevalue) ) 
+   while ( (iloop < p_maxstep) && (diffEnergy > p_etolSolvation) ) 
    {
       iloop++;
       double deltat = 0; //this is wrong for adi...
@@ -222,6 +234,9 @@ void GeometricFlow::run( const AtomList& atomList )
       //cout << "charget: " ; charget.print(); std::cout << std::endl ;
       //cout << "corlocqt: " ; corlocqt.print(); std::cout << std::endl ;
 
+      //
+      // Create B (bg)
+      // 
 		if (iloop == 1) {
 			seteqb(bg, atomList, charget, corlocqt );
 		}
@@ -239,14 +254,10 @@ void GeometricFlow::run( const AtomList& atomList )
 		tpb = tpb + titer;
 		itert += iter;
 
-      //
-      //  call the PB Solver!
-      //
 		eps = p_epsilonp;
 		if (iloop == 1) {
 			pbsolver(eps, phivoc, bg, p_tol, iter);
 		}
-
 
 		for (size_t ix = 2; ix <= p_comdata.nx() - 1; ix++) {
 			for (size_t iy = 2; iy <= p_comdata.ny() - 1; iy++) {
@@ -300,6 +311,10 @@ void GeometricFlow::run( const AtomList& atomList )
 
 }
 
+//
+//  Set up the grid - create a bounding box around the atoms, padded by
+//  p_extvalue.
+//
 void GeometricFlow::domainInitialization( const AtomList& atomList )
 {
    unsigned int natm = atomList.size();
@@ -332,7 +347,7 @@ void GeometricFlow::domainInitialization( const AtomList& atomList )
 	yright = yleft + p_comdata.deltay()*(ny - 1);
 	zright = zleft + p_comdata.deltaz()*(nz - 1);
 
-	//set the stupid globals...
+	//keep this around for later
    p_comdata.setBounds( xleft, xright, 
                         yleft, yright,
                         zleft, zright,
@@ -606,17 +621,14 @@ void GeometricFlow::normalizeSurfuAndEps (Mat<>& surfu, Mat<>& eps)
 //  computeSoleng
 //
 /*
- * Compute soleng1 and soleng2 (solvation).  This is an artifact of refactoring
- * the original F90 code.
+ * Compute soleng1 and soleng2 (solvation).
  * Parameters:
- * 		soleng:		The soleng variable to set (compute).  For soleng1, the phi
+ * 		soleng: The soleng variable to set (compute).  For soleng1, the phi
  *					array should be phi; for soleng2, the phiarray should be
  *					phivoc.
- * 		phi:		Either phi or phivoc array, depending on which soleng
+ * 		phi:	Either phi or phivoc array, depending on which soleng
  * 					variable we are computing
- *		phiDims:	Vector holding the dimensions of the phi array
- * 		natm:		The number of atoms
- * 		loc_qt:		The loc_qt array.  This is a [3][8][natm] int array, but
+ * 		loc_qt:	The loc_qt array.  This is a [3][8][natm] int array, but
  * 					must be passed as a pointer, since natm is a variable.
  * 		charget:	charget array.  This is an [8][natm] int array.
  */
@@ -636,7 +648,22 @@ void GeometricFlow::computeSoleng(double& soleng,
 }
 
 //
-// seteqb
+// seteqb - set up for the B matrix (Vector) of the non-regularized
+// generalized Poission equation that is solved for computing the
+// electrostatic potential.
+//
+// For boundary conditions, the geometric flow (non-regularized)
+// currently uses  \phi \rightarrow \phi_{c} (Coulombic potential) at the
+// outer boundary which can be realized by 
+//  \phi_{c}\left ( x=x_{g} \right )=
+//          \sum_{i=1}^{N}\frac{q_{i}}{\varepsilon_{s}\left | x_{g}-x_{i} \right | }
+// (q_{i} is a charge at x_{i}), x_{g} is the position at the outer
+// boundary, and eps_{s} is the dielectric constant of solvent). Note that
+// x_{i} is the position of atoms which have a net/partial charge.
+//
+//  Setting the boundary to be the value of the charge of the atom
+//  weighted by the distance from all the atoms.
+//  (Is this the mdh option in APBS?)
 //
 void GeometricFlow::seteqb(Mat<>& bg, const AtomList& AL, 
       const Mat<>& charget, const Mat<>& corlocqt)
@@ -677,24 +704,26 @@ double GeometricFlow::qb( size_t i,size_t j,size_t k, const AtomList& AL,
    {
       double foo = qbboundary( x, y, z, AL );
       //std::cout << "foo: " << foo << std::endl;
-      
       return foo; //qbboundary( x, y, z, AL );
    } else {
       double bar = qbinterior( x, y, z, charget, corlocqt );
       //std::cout << "bar: " << bar << std::endl;
-      
       return bar ; //qbinterior( x, y, z, charget, corlocqt );
    }
 }
 
 //
-// qbboundary
+// qbboundary - set the elements on the boundary
 //
 double GeometricFlow::qbboundary( double x, double y, double z,
       const AtomList& atomList )
 {  
    double vbdn = 0;
    for (size_t a = 0; a < atomList.size(); ++a) {
+      //
+      // vector from the current point (x_{g}) to the atom
+      // (x_{i}}
+      //
       double x_q = x - atomList.get(a).x(); //xyzr[a][1];
       double y_q = y - atomList.get(a).y(); //xyzr[a][2];
       double z_q = z - atomList.get(a).z(); //xyzr[a][3];
@@ -706,7 +735,8 @@ double GeometricFlow::qbboundary( double x, double y, double z,
       //   << y_q << ", " << z_q << std::endl;
       double q_q = atomList.get(a).pqr(); //pqr[a];
       //std::cout << "q_q: " << q_q << std::endl;
-      double rr = sqrt( dot(x_q, y_q, z_q) );
+      // distance, | x_{g} - x_{i} |
+      double rr = sqrt( dot(x_q, y_q, z_q) );  // distance from
       vbdn += q_q/( p_epsilons * rr );
       //std::cout << "epsilons: " << p_epsilons << std::endl;
    }
@@ -714,7 +744,7 @@ double GeometricFlow::qbboundary( double x, double y, double z,
 }
 
 //
-//  qbinterior
+//  qbinterior - laplacian???
 //
 double GeometricFlow::qbinterior(double x, double y, double z,
       const Mat<>& charget, const Mat<>& corlocqt)
@@ -739,7 +769,7 @@ double GeometricFlow::qbinterior(double x, double y, double z,
 //
 //  pbsolver
 //
-void GeometricFlow::pbsolver(Mat<>& eps, Mat<>& phi, Mat<>& bgf, double tol, int iter)
+void GeometricFlow::pbsolver(const Mat<>& eps, Mat<>& phi, const Mat<>& bgf, double tol, int iter)
 {
    //cout << "eps: " ; eps.print(); std::cout << std::endl ;
    //cout << "bgf: " ; bgf.print(); std::cout << std::endl ;
@@ -854,6 +884,6 @@ void GeometricFlow::pbsolver(Mat<>& eps, Mat<>& phi, Mat<>& bgf, double tol, int
 	}
 }
 
-void GeometricFlow::write()
+void GeometricFlow::write() const
 {
 }

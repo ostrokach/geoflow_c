@@ -51,6 +51,7 @@
 /// THE POSSIBILITY OF SUCH DAMAGE.
 ///
 /// @endverbatim
+#include <string>
 
 #pragma once
 
@@ -106,7 +107,7 @@ typedef struct _GeoflowInput
 #ifdef __cplusplus
 extern "C"
 #endif
-GeoflowOutput geoflowSolvation(double xyzr[MAXATOMS][XYZRWIDTH], std::size_t natm,
+GeoflowOutput geoflowSolvation(double xyzr[MAXATOMS][XYZRWIDTH], size_t natm,
 		GeoflowInput gfin);
 
 void pbconcz2_simple(

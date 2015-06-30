@@ -139,6 +139,22 @@ int main( int argc, char *argv[] )
    cout << "reading: " << xyzr_filename << endl ;
    AtomList AL( xyzr_filename, GF.getRadExp(), GF.getFFModel() ); 
 
+   // 
+   // Below, are parameters we likely want APBS to access
+   //
+   //  stub for changing the boundary condition; only one implemented
+   //  right now
+   //
+   //GF.setBoundaryCondition( GeometricFlow::MDH );
+   // include the dispersion force between solvent and solute molecules
+   // (1/0 = yes/no)
+   //GF.setVDWDispersion( vdwdispersion );
+   //GF.setGamma( .00001 ); 
+   //GF.setGrid( .25 ); // grid size
+   //GF.setETolSolvation( .01 ); //error tolerance for solvent
+   //GF.setETolSolver( 1e-4 ); //error tolerance for solver
+
+
    //
    //  Setup the geoflow solver
    //

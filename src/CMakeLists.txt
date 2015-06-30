@@ -1,10 +1,36 @@
+cmake_minimum_required(VERSION 3.2)
 
-cmake_minimum_required (VERSION 2.6)
 
-set( CMAKE_VERBOSE_MAKEFILE on )
+##
+## build with APBS 
+##
+#add_items(
+#    SOURCES
+#    cpbconcz2.cpp
+#    modules.cpp
+#    pbsolvercz.cpp
+#    solvationsub.cpp
+#    subfunction.cpp
+#    surfconcz.cpp
+#)
+# 
+#add_items(
+#    EXTERNAL_HEADERS
+#    cpbconcz2.h
+#)
+#
+#add_sublibrary(geoflow) 
+#
+## Enable C++11 features
+#if("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU"
+#       OR "${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
+#	add_definitions(-std=c++0x)
+#endif()
 
-project (geoflow_standalone)
 
+#
+#  build standalone
+#
 SET(geoflow_standalone_CMAKE_DIR "${geoflow_standalone_SOURCE_DIR}/cmake")
 
 set(GOOGLE_LIBS -L$(GMOCK_HOME)/osx -L$(GMOCK_HOME)/osx/gtest 

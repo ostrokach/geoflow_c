@@ -28,7 +28,8 @@ class GeometricFlow
    private:
 
       //
-      //  Input Parameters
+      //  Input Parameters - see .cpp for available documentation on these
+      //  variables.
       //
       //int nmol = 17,	
       double p_expervalue;
@@ -55,7 +56,7 @@ class GeometricFlow
       double p_epsilons;
       double p_epsilonp;
       int    p_radexp;
-      double p_crevalue;
+      double p_etolSolvation;
       // 0,		// idacsl
       double p_density;
       double p_holst_energy_unit;
@@ -66,6 +67,18 @@ class GeometricFlow
       int p_lj_iosetaa;
       int p_lj_iwca;
 
+      int p_boundaryType;
+
+   public:
+
+      enum BoundaryType{ ZERO, SDH, MDH, FOCUS, MAP};
+      // TODO: "focus" (higher priority) and "sdh" should be added
+
+      // only one boundary condition (MDH) is actually implemented, so this
+      // method doesn't change anything, documented for future updates.
+      void setBoundaryCondition( int type ) { p_boundaryType = type; }
+
+   private:
 
       /*
       double p_comdata_deltax;
@@ -136,7 +149,7 @@ class GeometricFlow
       double qbinterior(double x, double y, double z, 
             const Mat<>& charget, const Mat<>& corlocqt);
 
-      void pbsolver(Mat<>& eps, Mat<>& phi, Mat<>& bgf, double tol, int iter);
+      void pbsolver(const Mat<>& eps, Mat<>& phi, const Mat<>& bgf, double tol, int iter);
 
    public:
 
@@ -178,6 +191,13 @@ class GeometricFlow
       void setEpsilonP( double epsilonp ) { p_epsilonp = epsilonp; }
 
       void setGrid( double grid ) { p_grid = grid ; }
+
+      void setETolSolvation( double etol ) { p_etolSolvation = etol ; }
+
+      void setETolSolver( double tol ) { p_tol = tol ; }
+   
+      //Lennard-Jones well depth parameter for water
+      void setLJWell( double depth ) { p_epsilonw = depth ; } 
 
       // uncomment if needed:
       //void setNPiter( int npiter ) { p_npiter = npiter; }
