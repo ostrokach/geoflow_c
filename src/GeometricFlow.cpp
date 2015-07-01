@@ -854,6 +854,6 @@ void GeometricFlow::pbsolver(Mat<>& eps, Mat<>& phi, Mat<>& bgf, double tol, int
 	}
 }
 
-void GeometricFlow::write()
+void GeometricFlow::write() const
 {
 }
