@@ -13,7 +13,7 @@
 ///
 ///  Additional contributing authors listed in the code documentation.
 ///
-/// Copyright (c) 2010-2014 Battelle Memorial Institute. Developed at the
+/// Copyright (c) 2010-2015 Battelle Memorial Institute. Developed at the
 /// Pacific Northwest National Laboratory, operated by Battelle Memorial
 /// Institute, Pacific Northwest Division for the U.S. Department of Energy.
 ///
@@ -55,7 +55,7 @@
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
 
-#include "../modules.h"
+#include "Atom.h"
 
 /*
  * We test this function against results obtained from the original Fortran
@@ -66,18 +66,21 @@ class ChargeDist : public testing::Test {
 protected:
 	void SetUp() {
 		// These are some lovely globals...  :-/
-		comdata.deltax = 0.25;
-		comdata.deltay = 0.25;
-		comdata.deltaz = 0.25;
-		comdata.pi = acos(-1.0);
+		//ComData comdata;
+		//comdata.init(0.25);
+
+		Atom a(1, 0.0, 0.0, 0.0, 1.87, -0.257);
+		Atom b(1, 1.372, 0.0, 0.0, 1.4, -0.317);
+		Atom c(1, 1.764, 1.292, 0.0, 1.87, 0.398);
+		AtomList AL(
 
 		// 1.90 magic?  It's called EXTVALUE.
-		domainini(xyzr, natm, 1.90);
+		//domainini(xyzr, natm, 1.90);
 
 		// Calculate the charge distribution
-		for (size_t iatm = 1; iatm <= natm; iatm++) {
-			chargedist(xyzr, chratm, charget, corlocqt, loc_qt, iatm);
-		}
+//		for (size_t iatm = 1; iatm <= natm; iatm++) {
+//			chargedist(xyzr, chratm, charget, corlocqt, loc_qt, iatm);
+//		}
 	};
 
 	static const size_t natm = 3, foo = 8, bar = 3, baz = 4;

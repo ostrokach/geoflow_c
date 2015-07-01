@@ -1,4 +1,4 @@
-///  @file    surfconcz_test.cpp
+///  @file    Atom_test.cpp
 ///  @author  Keith T. Star
 ///  @brief Unit tests for Geometric Flow
 ///  @ingroup Geoflow
@@ -13,7 +13,7 @@
 ///
 ///  Additional contributing authors listed in the code documentation.
 ///
-/// Copyright (c) 2010-2014 Battelle Memorial Institute. Developed at the
+/// Copyright (c) 2010-2015 Battelle Memorial Institute. Developed at the
 /// Pacific Northwest National Laboratory, operated by Battelle Memorial
 /// Institute, Pacific Northwest Division for the U.S. Department of Energy.
 ///
@@ -55,53 +55,34 @@
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
 
-#include "../modules.h"
+#include "Atom.h"
 
-/*
- * We test this function against results obtained from the original Fortran
- * code.
- */
-
-class DomainIni : public testing::Test {
-protected:
-	void SetUp() {
-		// These are some lovely globals...  :-/
-		comdata.deltax = 2.5;
-		comdata.deltay = 2.5;
-		comdata.deltaz = 2.5;
-		// comdata.dcel = 0.25;
-		comdata.pi = acos(-1.0);
-
-		// 1.90 magic?  It's called EXTVALUE.
-		domainini(xyzr, natm, 1.90);
-	};
-
-	static const size_t natm = 3, foo = 8, bar = 3, baz = 4;
-
-	// These are the first three atoms from the imidazole molecule file.
-	double xyzr[natm][baz] = {
-		{0.00, 0.00, 0.00, 1.87},
-		{1.372, 0.00, 0.00, 1.40},
-		{1.764, 1.292, 0.00, 1.87}};
-};
-
-TEST_F(DomainIni, TestDimensions) {
-	EXPECT_EQ(55, comdata.nx);
-	EXPECT_EQ(53, comdata.ny);
-	EXPECT_EQ(48, comdata.nz);
+TEST(AtomConstruction, DefualtCtor) {
+	Atom atom;
+	ASSERT_EQ(atom.x(), 0.0);
+	ASSERT_EQ(atom.y(), 0.0);
+	ASSERT_EQ(atom.z(), 0.0);
+	ASSERT_EQ(atom.r(), 0.0);
+	ASSERT_EQ(atom.pqr(), 0.0);
+	ASSERT_EQ(atom.epsilon(), 0.0);
 }
 
-TEST_F(DomainIni, TestLeftandRight) {
-	EXPECT_EQ(-5.9, comdata.xleft);
-	EXPECT_EQ(7.6, comdata.xright);
-
-	EXPECT_EQ(-5.9, comdata.yleft);
-	EXPECT_EQ(7.1, comdata.yright);
-
-	EXPECT_EQ(-5.9, comdata.zleft);
-	EXPECT_EQ(5.85, comdata.zright);
+TEST(AtomConstruction, MyValuesWithoutEpsilon) {
+	Atom atom(1, 1.0, 2.0, 3.14, 4.0, 1.618);
+	ASSERT_EQ(atom.x(), 1.0);
+	ASSERT_EQ(atom.y(), 2.0);
+	ASSERT_EQ(atom.z(), 3.14);
+	ASSERT_EQ(atom.r(), 4.0);
+	ASSERT_EQ(atom.pqr(), 1.618);
+	ASSERT_EQ(atom.epsilon(), 0.0);
 }
 
-TEST_F(DomainIni, TestDcel) {
-	EXPECT_EQ(0.25, comdata.dcel);
+TEST(AtomConstruction, MyValuesWithEpsilon) {
+	Atom atom(1, 1.0, 2.0, 3.14, 4.0, 1.618, 0.001);
+	ASSERT_EQ(atom.x(), 1.0);
+	ASSERT_EQ(atom.y(), 2.0);
+	ASSERT_EQ(atom.z(), 3.14);
+	ASSERT_EQ(atom.r(), 4.0);
+	ASSERT_EQ(atom.pqr(), 1.618);
+	ASSERT_EQ(atom.epsilon(), 0.001);
 }
