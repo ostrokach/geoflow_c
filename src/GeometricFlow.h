@@ -1,3 +1,56 @@
+///  @file GeometricFlow.h
+///  @author  Elizabeth Jurrus, Andrew Stevens 
+///  @brief main class for all Geometric Flow methods 
+///  @ingroup Geoflow
+///  @version $Id$
+///  @attention
+///  @verbatim
+///
+/// APBS -- Adaptive Poisson-Boltzmann Solver
+///
+///  Nathan A. Baker (nathan.baker@pnnl.gov)
+///  Pacific Northwest National Laboratory
+///
+///  Additional contributing authors listed in the code documentation.
+///
+/// Copyright (c) 2010-2015 Battelle Memorial Institute. Developed at the
+/// Pacific Northwest National Laboratory, operated by Battelle Memorial
+/// Institute, Pacific Northwest Division for the U.S. Department of Energy.
+///
+/// Portions Copyright (c) 2002-2010, Washington University in St. Louis.
+/// Portions Copyright (c) 2002-2010, Nathan A. Baker.
+/// Portions Copyright (c) 1999-2002, The Regents of the University of
+/// California.
+/// Portions Copyright (c) 1995, Michael Holst.
+/// All rights reserved.
+///
+/// Redistribution and use in source and binary forms, with or without
+/// modification, are permitted provided that the following conditions are met:
+///
+/// Redistributions of source code must retain the above copyright notice, this
+/// list of conditions and the following disclaimer.
+///
+/// Redistributions in binary form must reproduce the above copyright notice,
+/// this list of conditions and the following disclaimer in the documentation
+/// and/or other materials provided with the distribution.
+///
+/// Neither the name of the developer nor the names of its contributors may be
+/// used to endorse or promote products derived from this software without
+/// specific prior written permission.
+///
+/// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+/// AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+/// IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+/// ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE
+/// LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+/// CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+/// SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+/// INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+/// CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+/// ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF
+/// THE POSSIBILITY OF SUCH DAMAGE.
+///
+/// @endverbatim
 #ifndef __GeometricFlow_h_
 #define __GeometricFlow_h_
 
@@ -16,6 +69,7 @@
 #include "Atom.h"
 #include "Mat.h"
 #include "ComData.h"
+#include "GeometricFlowStruct.h"
 
 #include <Eigen/Sparse>
 
@@ -23,7 +77,7 @@
 using namespace std;
 
 
-class GeometricFlow
+class GeometricFlow : protected GeometricFlowInput
 {
    private:
 
@@ -34,7 +88,6 @@ class GeometricFlow
       //int nmol = 17,	
       double p_expervalue;
       double p_press;
-      double p_gamma;
       int    p_npiter;
       int    p_ngiter;
       double p_tauval;
@@ -42,21 +95,17 @@ class GeometricFlow
       int    p_ffmodel;
       double p_sigmas;
       double p_epsilonw;
-      int    p_vdwdispersion;
       double p_extvalue;
       // 0,		// iprec
       // 10,		// istep
       int    p_iadi;
       double p_alpha;
       // 1,		// IPBIN
-      double p_tol;
       double p_tottf;
-      double p_grid;
       int    p_maxstep;
       double p_epsilons;
       double p_epsilonp;
       int    p_radexp;
-      double p_etolSolvation;
       // 0,		// idacsl
       double p_density;
       double p_holst_energy_unit;
@@ -67,16 +116,12 @@ class GeometricFlow
       int p_lj_iosetaa;
       int p_lj_iwca;
 
-      int p_boundaryType;
 
    public:
 
-      enum BoundaryType{ ZERO, SDH, MDH, FOCUS, MAP};
-      // TODO: "focus" (higher priority) and "sdh" should be added
-
       // only one boundary condition (MDH) is actually implemented, so this
       // method doesn't change anything, documented for future updates.
-      void setBoundaryCondition( int type ) { p_boundaryType = type; }
+      void setBoundaryCondition( BoundaryType type ) { m_boundaryCondition = type; }
 
    private:
 
@@ -96,6 +141,9 @@ class GeometricFlow
       double p_comdata_nz;
       double p_comdata_pi;
       */
+
+      // set up all the default variables
+      void setupDefaults();  
 
       double left(const valarray<double>& pr, double h, double ev)
       {
@@ -155,9 +203,12 @@ class GeometricFlow
 
       //
       //  empty constructor
-      //
+      //  (initialize with default parameters)
       GeometricFlow( );
-      //~Path() { };
+      //  (initialize from struct)
+      GeometricFlow( const struct GeometricFlowInput& gfi );
+     
+      friend struct GeometricFlowInput getGeometricFlowParams();
 
       //
       //  copy constructor
@@ -177,12 +228,12 @@ class GeometricFlow
 
       void setPressure( double pres_i ) { p_press = pres_i; }
       
-      void setGama( double gama_i ) { p_gamma = gama_i; }
+      void setGamma( double gamma ) { m_gamma = gamma; }
       
       void setFFModel( int ffmodel ) { p_ffmodel = ffmodel; }
 
       void setVDWDispersion( int vdwdispersion ) 
-            { p_vdwdispersion = vdwdispersion; }
+            { m_vdwdispersion = vdwdispersion; }
 
       void setExtValue( double extvalue ) { p_extvalue = extvalue; }
       
@@ -190,11 +241,11 @@ class GeometricFlow
       
       void setEpsilonP( double epsilonp ) { p_epsilonp = epsilonp; }
 
-      void setGrid( double grid ) { p_grid = grid ; }
+      void setGrid( double grid ) { m_grid = grid ; }
 
-      void setETolSolvation( double etol ) { p_etolSolvation = etol ; }
+      void setETolSolvation( double etol ) { m_etolSolvation = etol ; }
 
-      void setETolSolver( double tol ) { p_tol = tol ; }
+      void setETolSolver( double tol ) { m_tol = tol ; }
    
       //Lennard-Jones well depth parameter for water
       void setLJWell( double depth ) { p_epsilonw = depth ; } 
@@ -209,11 +260,11 @@ class GeometricFlow
 
       double getPressure() { return p_press; }
       
-      double getGama() { return p_gamma; }
+      double getGamma() { return m_gamma; }
       
       int getFFModel() { return p_ffmodel; }
 
-      double getVDWDispersion() { return p_vdwdispersion; }
+      double getVDWDispersion() { return m_vdwdispersion; }
 
       double getExtValue() { return p_extvalue; }
       
@@ -223,7 +274,7 @@ class GeometricFlow
 
       double getRadExp() { return p_radexp; }
 
-      double getGrid() { return p_grid; }
+      double getGrid() { return m_grid; }
 
       void write() const ;
 
@@ -232,7 +283,7 @@ class GeometricFlow
       //
       void printAllParams();
 
-      void run( const AtomList& atomList );
+      struct GeometricFlowOutput run( const AtomList& atomList );
       
 
 

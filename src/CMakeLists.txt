@@ -31,6 +31,8 @@ cmake_minimum_required(VERSION 3.2)
 #
 #  build standalone
 #
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
+
 SET(geoflow_standalone_CMAKE_DIR "${geoflow_standalone_SOURCE_DIR}/cmake")
 
 set(GOOGLE_LIBS -L$(GMOCK_HOME)/osx -L$(GMOCK_HOME)/osx/gtest 
@@ -43,6 +45,13 @@ include_directories( /usr/local/Cellar/eigen/3.2.4/include/eigen3/
                      /usr/local/Cellar/boost/1.58.0/include 
 #		     ${GOOGLE_INCLUDE}
                     )
+
+add_library(GeometricFlowLib 
+     GeometricFlowWrap.cpp
+     GeometricFlow.cpp
+     Atom.cpp
+     )
+
 
 #target_link_libraries(osm
 #                      ${GOOGLE_LIBS}
@@ -66,3 +75,9 @@ add_executable(GeometricFlow
      GeometricFlow.cpp
      Atom.cpp
 )
+
+add_executable(GeometricFlowWrap
+     runGeometricFlowWrap.c
+)
+
+target_link_libraries(GeometricFlowWrap GeometricFlowLib)

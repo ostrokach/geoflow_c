@@ -1,12 +1,125 @@
+///  @file GeometricFlow.cpp
+///  @author Elizabeth Jurrus, Andrew Stevens, Peter Hui, Kyle Monson, Zhan Chen, Guowei Wei
+///  @brief main class for all Geometric Flow methods 
+///  @ingroup Geoflow
+///  @version $Id$
+///  @attention
+///  @verbatim
+///
+/// APBS -- Adaptive Poisson-Boltzmann Solver
+///
+///  Nathan A. Baker (nathan.baker@pnnl.gov)
+///  Pacific Northwest National Laboratory
+///
+///  Additional contributing authors listed in the code documentation.
+///
+/// Copyright (c) 2010-2015 Battelle Memorial Institute. Developed at the
+/// Pacific Northwest National Laboratory, operated by Battelle Memorial
+/// Institute, Pacific Northwest Division for the U.S. Department of Energy.
+///
+/// Portions Copyright (c) 2002-2010, Washington University in St. Louis.
+/// Portions Copyright (c) 2002-2010, Nathan A. Baker.
+/// Portions Copyright (c) 1999-2002, The Regents of the University of
+/// California.
+/// Portions Copyright (c) 1995, Michael Holst.
+/// All rights reserved.
+///
+/// Redistribution and use in source and binary forms, with or without
+/// modification, are permitted provided that the following conditions are met:
+///
+/// Redistributions of source code must retain the above copyright notice, this
+/// list of conditions and the following disclaimer.
+///
+/// Redistributions in binary form must reproduce the above copyright notice,
+/// this list of conditions and the following disclaimer in the documentation
+/// and/or other materials provided with the distribution.
+///
+/// Neither the name of the developer nor the names of its contributors may be
+/// used to endorse or promote products derived from this software without
+/// specific prior written permission.
+///
+/// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+/// AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+/// IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+/// ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE
+/// LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+/// CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+/// SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+/// INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+/// CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+/// ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF
+/// THE POSSIBILITY OF SUCH DAMAGE.
+///
+/// @endverbatim
 #include "GeometricFlow.h"
 #include "Mat.h"
 
 using namespace std;
 
-GeometricFlow::GeometricFlow( )
+GeometricFlow::GeometricFlow()
+   : GeometricFlowInput {
+      // set up defaults
+
+      // sent the boundary condition (see seteqb for more detail)
+      .m_boundaryCondition = MDH,
+
+      // VDWDISPERSION:  1(on) or 0 (off)- previously called REPULSIVE.
+      // This is the option to include the dispersion force between solvent
+      // and solute molecules in non-polar contribution of solvation energy.
+      // It is different from the surface definition (i.e., van der Waals
+      // surface) which is critical to define the simulation domain)
+      .m_vdwdispersion = 0,
+
+      .m_gamma = 0.0001,
+
+      // grid spacing, distance per cell
+      .m_grid = 0.25, // from Thomas et al.
+
+      .m_etolSolvation = 0.01,  // formerly CREVALUE in the fortran and C code. Error
+            // tolerance for the solvation difference values 
+
+      .m_tol = 1e-4   // tolerance for the Eigen pbsolver
+   }
+{
+   setupDefaults();  // initialize all the other stuff we don't want the
+                     // interface to see
+}
+
+GeometricFlow::GeometricFlow(const struct GeometricFlowInput &gfi)
+   : GeometricFlowInput {
+      // set up defaults
+
+      // sent the boundary condition (see seteqb for more detail)
+      .m_boundaryCondition = gfi.m_boundaryCondition,
+
+      // VDWDISPERSION:  1(on) or 0 (off)- previously called REPULSIVE.
+      // This is the option to include the dispersion force between solvent
+      // and solute molecules in non-polar contribution of solvation energy.
+      // It is different from the surface definition (i.e., van der Waals
+      // surface) which is critical to define the simulation domain)
+      .m_vdwdispersion = gfi.m_vdwdispersion,
+
+      .m_gamma = gfi.m_gamma,
+
+      // grid spacing, distance per cell
+      .m_grid = gfi.m_grid, // from Thomas et al.
+
+      .m_etolSolvation = gfi.m_etolSolvation,  // formerly CREVALUE in the fortran and C code. Error
+            // tolerance for the solvation difference values 
+
+      .m_tol = gfi.m_tol   // tolerance for the Eigen pbsolver
+   }
+{
+   setupDefaults();
+}
+
+//
+//  setupDefaults - set up all the other defaults in the code we don't
+//  want the "users" to see or mess with
+//
+void GeometricFlow::setupDefaults()
 {
    p_press = 0.008;
-   p_gamma = 0.0001;
    p_npiter = 1;
    p_ngiter = 1;
 
@@ -17,46 +130,41 @@ GeometricFlow::GeometricFlow( )
 
    p_ffmodel = 1;  // FFMODEL: 1 for ZAP-9/AM1-BCCv1; 2 for OPLS/AA
 
-   // SIGMAS: Angstrom (radius of water molecule based on LJ parameter sigma)
-   p_sigmas = 1.5828;
+   // Solvent radius (SIGMAS: Angstrom (radius of water molecule based 
+   //   on LJ parameter sigma)
+   p_sigmas = 1.5828; // from Thomas et al.
+
    // EPSILONW:  epsilon parameter of O (kcal/mol) of water molecule...
    // the Lennard-Jones well depth parameter for water.  Perhaps we could
    // call it ljwell?
-   p_epsilonw = 0.1554;
-   // VDWDISPERSION:  1(on) or 0 (off)- previously called REPULSIVE.
-   // This is the option to include the dispersion force between solvent
-   // and solute molecules in non-polar contribution of solvation energy.
-   // It is different from the surface definition (i.e., van der Waals
-   // surface) which is critical to define the simulation domain)
-   p_vdwdispersion = 0;
+   p_epsilonw = 0.1554; // from Thomas et al.
+
+   
    // EXTVALUE:  (distance atom surface and box boundary)
    p_extvalue = 1.90;
    // iprec
    // IPREC: flag to indicate the usage of preconditioner iprec =1 (yes); 0 (no)
    // istep
    p_iadi = 0;
+
    // ALPHA: weight of previous solution to change the next solution in geometry flow
    p_alpha = 0.50;
-     // IPBIN  //IPBIN: start guess for PB 1; inherit '0' - not used?
-   p_tol = 1e-4;  // tolerance for the Eigen pbsolver
+   
+   // IPBIN  //IPBIN: start guess for PB 1; inherit '0' - not used?
    p_tottf = 3.5;
    p_maxstep = 20;
-   p_epsilons = 80.00;
+
+   // solvent dielectric value
+   p_epsilons = 80.00; // from Thomas et al.
    p_epsilonp = 1.5;
    p_radexp = 1;
-   p_etolSolvation = 0.01;  // formerly CREVALUE in the fortran and C code. Error
-                   // tolerance for the solvation difference values 
 
    // idacsl //idacsl: 0 for solvation force calculation; 1 or accuracy test
 
-   p_density = 0.03346;  // bconc
-
-   p_grid = 0.25;  // distance per cell - grid spacing
-   p_comdata.init( p_grid );
-   //p_comdata_deltax = p_grid;
-   //p_comdata_deltay = p_grid;
-   //p_comdata_deltaz = p_grid;
-   //p_comdata_pi = acos(-1.0);  //Pi
+   // bulk density
+   p_density = 0.03347; // from Thomas et al.
+   
+   p_comdata.init( m_grid );
 
    // http://ccom.ucsd.edu/~mholst/pubs/dist/Hols94d.pdf (see page 12)
    p_holst_energy_unit = 332.06364;
@@ -65,79 +173,20 @@ GeometricFlow::GeometricFlow( )
    p_lj_iosetaa = 1;
    p_lj_iwca = 1;
 
-   // change the boundary condition
-   p_boundaryType = MDH;
-
 }
 
 //~GeometricFlow() { };
 
 /*
-//
-//  copy constructor
+//  TODO - need to implement?
+//  copy constructor - constructors are commented out for maintenance.
 // 
 GeometricFlow::GeometricFlow( const GeometricFlow& gf )
 {
-   p_expervalue = gf.p_expervalue;
-   p_press = gf.p_press;
-   p_gamma = gf.p_gamma;
-   p_npiter = gf.p_npiter;
-   p_ngiter = gf.p_ngiter;
-   p_tauval = gf.p_tauval;
-   p_prob = gf.p_prob;
-   p_ffmodel = gf.p_ffmodel;
-   p_sigmas = gf.p_sigmas;
-   p_epsilonw = gf.p_epsilonw;
-   p_vdwdispersion = gf.p_vdwdispersion;
-   p_extvalue = gf.p_extvalue;
-   p_iadi = gf.p_iadi;
-   p_alpha = gf.p_alpha;
-   p_tol = gf.p_tol;
-   p_tottf = gf.p_tottf;
-   p_maxstep = gf.p_maxstep;
-   p_epsilons = gf.p_epsilons;
-   p_epsilonp = gf.p_epsilonp;
-   p_radexp = gf.p_radexp;
-   p_crevalue = gf.p_crevalue;
-   p_density = gf.p_density;
-
-   p_grid = gf.p_grid;
-   p_comdata_deltax = gf.p_comdata_deltax;
-   p_comdata_deltax = gf.p_comdata_deltay;
-   p_comdata_deltax = gf.p_comdata_deltaz;
-   p_comdata_pi = gf.p_comdata_pi;
 }
 
 GeometricFlow::GeometricFlow( const GeometricFlow* gf )
 {
-   p_expervalue = gf->p_expervalue;
-   p_press = gf->p_press;
-   p_gamma = gf->p_gamma;
-   p_npiter = gf->p_npiter;
-   p_ngiter = gf->p_ngiter;
-   p_tauval = gf->p_tauval;
-   p_prob = gf->p_prob;
-   p_ffmodel = gf->p_ffmodel;
-   p_sigmas = gf->p_sigmas;
-   p_epsilonw = gf->p_epsilonw;
-   p_vdwdispersion = gf->p_vdwdispersion;
-   p_extvalue = gf->p_extvalue;
-   p_iadi = gf->p_iadi;
-   p_alpha = gf->p_alpha;
-   p_tol = gf->p_tol;
-   p_tottf = gf->p_tottf;
-   p_maxstep = gf->p_maxstep;
-   p_epsilons = gf->p_epsilons;
-   p_epsilonp = gf->p_epsilonp;
-   p_radexp = gf->p_radexp;
-   p_crevalue = gf->p_crevalue;
-   p_density = gf->p_density;
-
-   p_grid = gf->p_grid;
-   p_comdata_deltax = gf->p_comdata_deltax;
-   p_comdata_deltax = gf->p_comdata_deltay;
-   p_comdata_deltax = gf->p_comdata_deltaz;
-   p_comdata_pi = gf->p_comdata_pi;
 }
 */
 
@@ -156,7 +205,7 @@ void printAllParams()
 //template
 //std::ostream& operator<< <double> ( std::ostream& os, const Mat<double>& M);
 
-void GeometricFlow::run( const AtomList& atomList )
+struct GeometricFlowOutput GeometricFlow::run( const AtomList& atomList )
 {
    //
    //  initialize the domain - set up the grid size and length
@@ -198,16 +247,16 @@ void GeometricFlow::run( const AtomList& atomList )
 	double elec = 0.0, area = 0.0, volume = 0.0, attint = 0.0;
    double tpb = 0.0;  // time step calculation for total pb
    int iterf = 0, itert = 0; // iteration num for first iteration and total
-   double potcoe = 1.0 / p_gamma;
-   double lj_roro = p_density / p_gamma;
-   double lj_conms = p_press / p_gamma;
+   double potcoe = 1.0 / m_gamma;
+   double lj_roro = p_density / m_gamma;
+   double lj_conms = p_press / m_gamma;
    int igfin = 1;
-   //std::cout << "blahh: " << p_press << " " << p_gamma << std::endl;
+   //std::cout << "blahh: " << p_press << " " << m_gamma << std::endl;
 
    //
    // iteration coupling surface generation and poisson solver
    //
-   while ( (iloop < p_maxstep) && (diffEnergy > p_etolSolvation) ) 
+   while ( (iloop < p_maxstep) && (diffEnergy > m_etolSolvation) ) 
    {
       iloop++;
       double deltat = 0; //this is wrong for adi...
@@ -246,7 +295,7 @@ void GeometricFlow::run( const AtomList& atomList )
       //
 		int iter = 1000;
 		double fpb, titer = 0.0;
-		pbsolver(eps, phi, bg, p_tol, iter);
+		pbsolver(eps, phi, bg, m_tol, iter);
 		if (iloop == 1) {
 			fpb = titer;
 			iterf = iter;
@@ -256,7 +305,7 @@ void GeometricFlow::run( const AtomList& atomList )
 
 		eps = p_epsilonp;
 		if (iloop == 1) {
-			pbsolver(eps, phivoc, bg, p_tol, iter);
+			pbsolver(eps, phivoc, bg, m_tol, iter);
 		}
 
 		for (size_t ix = 2; ix <= p_comdata.nx() - 1; ix++) {
@@ -286,7 +335,7 @@ void GeometricFlow::run( const AtomList& atomList )
 		std::cout << "soleng2 = " << soleng2 << std::endl;
 		//std::cout << "soleng2 is too small!!" << std::endl;  // why is this here?
 		elec = (soleng1 - soleng2) * p_holst_energy_unit;
-		solv[iloop - 1] = elec + p_gamma * (area + volume * lj_conms + attint *
+		solv[iloop - 1] = elec + m_gamma * (area + volume * lj_conms + attint *
 				lj_roro);
 		if (iloop > 1) {
 			diffEnergy = fabs((solv[iloop - 1] - solv[iloop - 2]));
@@ -303,11 +352,15 @@ void GeometricFlow::run( const AtomList& atomList )
 
 
 	double sumpot = area + volume * lj_conms + attint * lj_roro;
-	double nonpolarSolvation = sumpot*p_gamma;
+	double nonpolarSolvation = sumpot*m_gamma;
 	double totalSolvation = nonpolarSolvation + elec;
    cout << "totalSolv:\t" << totalSolvation << "\t";
    cout << "nonpolar: " << nonpolarSolvation << "\t";
    cout << "electro: " << elec << "\n" << std::endl;
+
+   struct GeometricFlowOutput geoflowOut;
+
+   return geoflowOut;
 
 }
 
@@ -388,17 +441,17 @@ void GeometricFlow::yhsurface( const AtomList& atomList,
 	if (p_ffmodel == 1) {
 		for (size_t i = 0; i < natm; ++i) {
 			sigma[i] = atom_r[i] + p_sigmas;
-			if (p_vdwdispersion != 0) {
+			if (m_vdwdispersion != 0) {
 				double se = sigma[i]/(atom_r[i] + p_prob);
 				epsilon[i] = pow( pow(se, 12.0) - 2.0*pow(se, 6.0) , -1.0);
 			}
-			seta12[i] = p_lj_iosetar * p_vdwdispersion * epsilon[i];
-			seta6[i] = 2.0*p_lj_iosetaa * p_vdwdispersion * epsilon[i];
+			seta12[i] = p_lj_iosetar * m_vdwdispersion * epsilon[i];
+			seta6[i] = 2.0*p_lj_iosetaa * m_vdwdispersion * epsilon[i];
 		}
 	} else {
 		for (size_t i = 0; i < natm; ++i) {
 			sigma[i] = sqrt(4.0* atom_r[i] * p_sigmas);
-			if (p_vdwdispersion != 0) {
+			if (m_vdwdispersion != 0) {
 				epsilon[i] = sqrt(atomList.get(i).epsilon() * p_epsilonw);
 				seta12[i] = 4.0*epsilon[i];
 				seta6[i] = 4.0*epsilon[i];
@@ -648,7 +701,7 @@ void GeometricFlow::computeSoleng(double& soleng,
 }
 
 //
-// seteqb - set up for the B matrix (Vector) of the non-regularized
+// seteqb - "Set Equation B" - set up for the B matrix (Vector) of the non-regularized
 // generalized Poission equation that is solved for computing the
 // electrostatic potential.
 //
