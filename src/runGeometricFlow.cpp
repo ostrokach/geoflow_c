@@ -1,6 +1,6 @@
-///  @file    main.cpp
-///  @author  Andrew Stevens
-///  @brief this is a wrapper to set the geoflow parameters, see fort.12
+///  @file runGeometricFlow.cpp
+///  @author  Elizabeth Jurrus
+///  @brief this is a standalone program to run the GeometricFlow Class.
 ///  @ingroup Geoflow
 ///  @version $Id$
 ///  @attention
@@ -13,7 +13,7 @@
 ///
 ///  Additional contributing authors listed in the code documentation.
 ///
-/// Copyright (c) 2010-2012 Battelle Memorial Institute. Developed at the
+/// Copyright (c) 2010-2015 Battelle Memorial Institute. Developed at the
 /// Pacific Northwest National Laboratory, operated by Battelle Memorial
 /// Institute, Pacific Northwest Division for the U.S. Department of Energy.
 ///
@@ -113,8 +113,8 @@ int main( int argc, char *argv[] )
        double pres_i = getVar( "Geoflow.pres_i", pt, GF.getPressure() ) ;
        GF.setPressure( pres_i );
 
-       double gama_i = getVar( "Geoflow.gama_i", pt, GF.getGama() ) ;
-       GF.setGama( gama_i );
+       double gamma = getVar( "Geoflow.gama_i", pt, GF.getGamma() ) ;
+       GF.setGamma( gamma );
 
        int ffmodel = getVar( "Geoflow.ffmodel", pt, GF.getFFModel() ) ;
        GF.setFFModel( ffmodel );
@@ -139,18 +139,28 @@ int main( int argc, char *argv[] )
    cout << "reading: " << xyzr_filename << endl ;
    AtomList AL( xyzr_filename, GF.getRadExp(), GF.getFFModel() ); 
 
+   // 
+   // Below, are parameters we likely want APBS to access
+   //
+   //  stub for changing the boundary condition; only one implemented
+   //  right now
+   //
+   //GF.setBoundaryCondition( GeometricFlow::MDH );
+   // include the dispersion force between solvent and solute molecules
+   // (1/0 = yes/no)
+   //GF.setVDWDispersion( vdwdispersion );
+   //GF.setGamma( .00001 ); 
+   //GF.setGrid( .25 ); // grid size
+   //GF.setETolSolvation( .01 ); //error tolerance for solvent
+   //GF.setETolSolver( 1e-4 ); //error tolerance for solver
+   //GF.setLJWell( 0.1554 ); //Lennard-Jones well depth parameter for water
+
+
    //
    //  Setup the geoflow solver
    //
    cout << "seting up..." << endl ;
-   GF.run( AL );
+   struct GeometricFlowOutput geoOut = GF.run( AL );
    
-
-
-/*	pbconcz2_simple( pres_i, gama_i, npiter, ngiter, tauval, prob,
-      ffmodel, sigmas, epsilonw, vdwdispersion, extvalue, iadi, alpha,
-      tol, tottf, dcel, maxstep, epsilons, epsilonp, radexp, crevalue,
-      density, xyzr_filename, exper_value );
-      */
 }
 
