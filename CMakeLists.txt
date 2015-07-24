@@ -14,6 +14,7 @@ endif()
 
 # TODO: Go download boost if it's not found.
 find_package(Boost)
+include_directories(${Boost_INCLUDE_DIR})
 
 SET(CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/src/cmake)
 FIND_PACKAGE(Eigen3)
