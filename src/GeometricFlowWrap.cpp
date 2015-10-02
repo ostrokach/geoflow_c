@@ -58,10 +58,11 @@
 
 using namespace std;
 
-
 struct GeometricFlowInput getGeometricFlowParams()
 {
-   GeometricFlow GF;
+  // create the Geoflow Class
+  GeometricFlow GF;
+  // get the struct for use in the c code
   struct GeometricFlowInput GFI = GF;
 
   return GFI;
