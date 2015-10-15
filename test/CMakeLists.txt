@@ -15,7 +15,7 @@ ExternalProject_Add( googlemock
 
 # Google Mock/Test includes
 ExternalProject_Get_Property(googlemock source_dir)
-include_directories(${CMAKE_SOURCE_DIR}/src ${source_dir}/include ${source_dir}/gtest/include)
+include_directories(${PROJECT_SOURCE_DIR}/src ${source_dir}/include ${source_dir}/gtest/include)
 
 add_executable(UnitTests test_main.cpp
 	# This is gross, but I've already spent far too long on hacking CMake.
