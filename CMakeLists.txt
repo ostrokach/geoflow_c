@@ -38,5 +38,15 @@ else()
 	include_directories(${EIGEN3_INCLUDE_DIR})
 endif()
 
+#
+#  add the src dir
+#
 add_subdirectory(src)
-add_subdirectory(test)
+
+#
+#  make testing optional
+#
+option(ENABLE_TESTS "Tests" OFF)
+if(ENABLE_TESTS)
+  add_subdirectory(test)
+endif()
