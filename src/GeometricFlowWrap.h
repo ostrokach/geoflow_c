@@ -61,6 +61,10 @@ extern "C"{
 struct GeometricFlowOutput runGeometricFlowWrap
 ( struct GeometricFlowInput geoflowParams );
 
+struct GeometricFlowOutput runGeometricFlowWrapAPBS
+( struct GeometricFlowInput geoflowParams,
+  double* atoms, double* pqrs, int num_atoms );
+
 struct GeometricFlowInput getGeometricFlowParams();
 
 #ifdef __cplusplus

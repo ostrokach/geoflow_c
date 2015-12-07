@@ -134,6 +134,8 @@ class AtomList
 
       AtomList( string xyzr_file, const double radexp, const int ffmodel );
 
+      AtomList( double* xyzrs, double* pqrs, const int num_atoms, const double radexp, const int ffmodel );
+
       AtomList( const AtomList& AL ) { p_atomList = AL.p_atomList ; }
 
       AtomList( const AtomList* AL ) { p_atomList = AL->p_atomList ; }

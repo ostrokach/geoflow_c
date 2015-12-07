@@ -189,6 +189,20 @@ AtomList::AtomList( string xyzr_file, const double radexp, const int ffmodel )
 
 }
 
+AtomList::AtomList( double* xyzrs, double* pqrs, const int num_atoms, 
+                    const double radexp, const int ffmodel )
+{
+   for( unsigned int an; an < num_atoms; an++ )
+   {
+/*      Atom A( ffmodel,
+            xyzrs[an][0], xyzrs[an][1], xyzrs[an][2],
+            xyzrs[an][3] * radexp,
+            pqrs[an] );
+      p_atomList.push_back( A );
+*/
+    }
+}
+
 /*
  * change the charge distribution for each atom:
  *

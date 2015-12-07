@@ -68,6 +68,9 @@ struct GeometricFlowInput getGeometricFlowParams()
   return GFI;
 }
 
+//
+//  for testing only!
+//
 struct GeometricFlowOutput runGeometricFlowWrap
    ( struct GeometricFlowInput geoflowParams )
 {
@@ -78,6 +81,26 @@ struct GeometricFlowOutput runGeometricFlowWrap
    
    AtomList emptyAtomList; // need to fill this with atoms
    AtomList AL( "imidazole.xyzr", GF.getRadExp(), GF.getFFModel() ); 
+
+   struct GeometricFlowOutput GFO = GF.run( AL ); //emptyAtomList );
+   
+   return GFO;
+}
+
+//
+//  to call from APBS
+//
+struct GeometricFlowOutput runGeometricFlowWrapAPBS
+   ( struct GeometricFlowInput geoflowParams,
+     double* atoms, double* pqrs, int num_atoms)
+{
+
+   cout << "boo from GeometricFlowWrap!" << endl; 
+
+   GeometricFlow GF( geoflowParams );
+   
+   AtomList emptyAtomList; // need to fill this with atoms
+   AtomList AL( atoms, pqrs, num_atoms, GF.getRadExp(), GF.getFFModel() ); 
 
    struct GeometricFlowOutput GFO = GF.run( AL ); //emptyAtomList );
    
