@@ -56,6 +56,7 @@
 
 #include <iostream>
 
+
 using namespace std;
 
 struct GeometricFlowInput getGeometricFlowParams()
@@ -90,20 +91,25 @@ struct GeometricFlowOutput runGeometricFlowWrap
 //
 //  to call from APBS
 //
+#ifdef GEOFLOW_APBS
 struct GeometricFlowOutput runGeometricFlowWrapAPBS
    ( struct GeometricFlowInput geoflowParams,
-     double* atoms, double* pqrs, int num_atoms)
+     Valist* molecules );   // or Valist* molecules[]
 {
+   hdhd
 
    cout << "boo from GeometricFlowWrap!" << endl; 
 
    GeometricFlow GF( geoflowParams );
-   
+   /*
    AtomList emptyAtomList; // need to fill this with atoms
    AtomList AL( atoms, pqrs, num_atoms, GF.getRadExp(), GF.getFFModel() ); 
 
    struct GeometricFlowOutput GFO = GF.run( AL ); //emptyAtomList );
+   */
+   AtomList emptyAtomList; // need to fill this with atoms
+   struct GeometricFlowOutput GFO = GF.run( emptyAtomList );
    
    return GFO;
 }
-
+#endif // GEOFLOW_APBS

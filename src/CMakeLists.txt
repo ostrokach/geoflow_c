@@ -1,6 +1,7 @@
 project (geoflow_c)
 cmake_minimum_required(VERSION 3.1)
 
+#add_definitions(-DGEOFLOW_APBS)
 
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
 
@@ -38,3 +39,4 @@ add_executable(GeometricFlowWrap
 )
 
 target_link_libraries(GeometricFlowWrap GeometricFlowLib)
+
