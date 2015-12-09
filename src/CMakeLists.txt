@@ -1,7 +1,18 @@
 project (geoflow_c)
 cmake_minimum_required(VERSION 3.1)
 
-#add_definitions(-DGEOFLOW_APBS)
+option(ENABLE_GEOFLOW_APBS "geoflow APBS" OFF)
+if(ENABLE_GEOFLOW_APBS)
+   add_definitions(-DGEOFLOW_APBS)
+   include_directories(
+         ../../../src/ 
+         ../../../tools/windows/configuration\ headers/
+         ../../../externals/fetk/maloc/src/base
+         ../../../externals/fetk/maloc/src/vsys
+         ../../../externals/fetk/maloc/src/vsh
+         ../../../externals/fetk/maloc/src/psh
+         )
+endif()
 
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
 

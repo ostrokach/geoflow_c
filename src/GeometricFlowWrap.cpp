@@ -94,9 +94,9 @@ struct GeometricFlowOutput runGeometricFlowWrap
 #ifdef GEOFLOW_APBS
 struct GeometricFlowOutput runGeometricFlowWrapAPBS
    ( struct GeometricFlowInput geoflowParams,
-     Valist* molecules );   // or Valist* molecules[]
+     Valist* molecules )   // or Valist* molecules[]
 {
-   hdhd
+   //hdhd
 
    cout << "boo from GeometricFlowWrap!" << endl; 
 
