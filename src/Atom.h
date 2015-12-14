@@ -1,6 +1,6 @@
 ///  @file Atom.h
 ///  @author  Elizabeth Jurrus
-///  @brief container class for atom information 
+///  @brief container class for atom information
 ///  @ingroup Geoflow
 ///  @version $Id$
 ///  @attention
@@ -80,9 +80,9 @@ class Atom
       double p_ljepsilon;
 
       void setRadius( const int ffmodel, double r )
-      { 
+      {
          if (ffmodel == 1 )
-            p_radius = ( r < 1e-6 ) ? 1.21 : r; 
+            p_radius = ( r < 1e-6 ) ? 1.21 : r;
          else
             p_radius = r;
       }
@@ -99,7 +99,7 @@ class Atom
 
       //
       //  copy constructor
-      // 
+      //
       Atom( const Atom& A ) ;
       Atom( const Atom* A ) ;
 
@@ -134,7 +134,7 @@ class AtomList
 
       AtomList( string xyzr_file, const double radexp, const int ffmodel );
 
-      AtomList( double* xyzrs, double* pqrs, const int num_atoms, const double radexp, const int ffmodel );
+      //AtomList( double* xyzrs, double* pqrs, const int num_atoms, const double radexp, const int ffmodel );
 
       AtomList( const AtomList& AL ) { p_atomList = AL.p_atomList ; }
 
@@ -144,7 +144,9 @@ class AtomList
 
       const Atom& get( unsigned int i ) const { return p_atomList[i]; }
 
-      void changeChargeDistribution 
+      void add( Atom A ) { p_atomList.push_back(A); };
+
+      void changeChargeDistribution
          ( Mat<>& charget, Mat<>& corlocqt, Mat< size_t>& loc_qt,
            const ComData& comData ) const;
 
@@ -152,6 +154,3 @@ class AtomList
 };
 
 #endif
-
-      
-

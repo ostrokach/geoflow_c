@@ -96,19 +96,41 @@ struct GeometricFlowOutput runGeometricFlowWrapAPBS
    ( struct GeometricFlowInput geoflowParams,
      Valist* molecules )   // or Valist* molecules[]
 {
-   //hdhd
-
    cout << "boo from GeometricFlowWrap!" << endl; 
 
+   //
+   //  create the GeometricFlow object
+   //
    GeometricFlow GF( geoflowParams );
-   /*
-   AtomList emptyAtomList; // need to fill this with atoms
-   AtomList AL( atoms, pqrs, num_atoms, GF.getRadExp(), GF.getFFModel() ); 
 
-   struct GeometricFlowOutput GFO = GF.run( AL ); //emptyAtomList );
-   */
-   AtomList emptyAtomList; // need to fill this with atoms
-   struct GeometricFlowOutput GFO = GF.run( emptyAtomList );
+   //
+   // convert Valist to an AtomList
+   //
+   cout << "converting atom list" << endl;
+   AtomList atomList;
+   Vatom *atom;
+   unsigned int natoms = Valist_getNumberAtoms(molecules);
+   cout << "natoms: " << natoms << endl;
+   for (unsigned int i=0; i < natoms; i++) 
+   {		
+      atom = Valist_getAtom(molecules, i);
+      cout << "i: " << i << endl;
+      Atom myAtom( 
+            GF.getFFModel(),
+         Vatom_getPosition(atom)[0],
+         Vatom_getPosition(atom)[1],		
+         Vatom_getPosition(atom)[2],		
+         Vatom_getRadius(atom) * GF.getRadExp(),
+         Vatom_getCharge(atom) );
+      atomList.add( myAtom );
+   }
+   cout << "done with atom list" << endl;
+   atomList.print();
+
+   //
+   //  run Geoflow!
+   //
+   struct GeometricFlowOutput GFO = GF.run( atomList );
    
    return GFO;
 }

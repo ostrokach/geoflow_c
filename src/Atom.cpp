@@ -1,6 +1,6 @@
 ///  @file Atom.cpp
 ///  @author  Elizabeth Jurrus
-///  @brief container class for atom information 
+///  @brief container class for atom information
 ///  @ingroup Geoflow
 ///  @version $Id$
 ///  @attention
@@ -95,7 +95,7 @@ Atom::Atom( const int ffmodel, double x, double y, double z, double r, double pq
 
 //
 //  copy constructor
-// 
+//
 Atom::Atom( const Atom& A )
 {
    p_x = A.p_x;
@@ -106,7 +106,7 @@ Atom::Atom( const Atom& A )
    p_ljepsilon = A.p_ljepsilon;
 }
 
-Atom::Atom( const Atom* A ) 
+Atom::Atom( const Atom* A )
 {
    p_x = A->p_x;
    p_y = A->p_y;
@@ -163,8 +163,8 @@ AtomList::AtomList( string xyzr_file, const double radexp, const int ffmodel )
             // reading in x, y, z, r, pqr, ljepsilon (ignoring the rest of
             // the file
             Atom A( ffmodel,
-                  stod(one_line[0]), stod(one_line[1]), stod(one_line[2]), 
-                  stod(one_line[3]) * radexp, 
+                  stod(one_line[0]), stod(one_line[1]), stod(one_line[2]),
+                  stod(one_line[3]) * radexp,
                   stod(one_line[4]),
                   stod(one_line[5]) );
             p_atomList.push_back( A );
@@ -173,8 +173,8 @@ AtomList::AtomList( string xyzr_file, const double radexp, const int ffmodel )
          {
             // reading in x, y, z, r, pqr
             Atom A( ffmodel,
-                  stod(one_line[0]), stod(one_line[1]), stod(one_line[2]), 
-                  stod(one_line[3]) * radexp, 
+                  stod(one_line[0]), stod(one_line[1]), stod(one_line[2]),
+                  stod(one_line[3]) * radexp,
                   stod(one_line[4]) );
             p_atomList.push_back( A );
          }
@@ -189,19 +189,21 @@ AtomList::AtomList( string xyzr_file, const double radexp, const int ffmodel )
 
 }
 
-AtomList::AtomList( double* xyzrs, double* pqrs, const int num_atoms, 
+/*
+AtomList::AtomList( double* xyzrs, double* pqrs, const int num_atoms,
                     const double radexp, const int ffmodel )
 {
    for( unsigned int an; an < num_atoms; an++ )
    {
-/*      Atom A( ffmodel,
+      Atom A( ffmodel,
             xyzrs[an][0], xyzrs[an][1], xyzrs[an][2],
             xyzrs[an][3] * radexp,
             pqrs[an] );
       p_atomList.push_back( A );
-*/
+
     }
 }
+*/
 
 /*
  * change the charge distribution for each atom:
@@ -218,7 +220,7 @@ AtomList::AtomList( double* xyzrs, double* pqrs, const int num_atoms,
  *   calculated.
  */
 void AtomList::changeChargeDistribution
-      ( Mat<>& charget, Mat<>& corlocqt, Mat< size_t>& loc_qt, 
+      ( Mat<>& charget, Mat<>& corlocqt, Mat< size_t>& loc_qt,
         const ComData& comdata ) const
 {
 	//for (size_t iatm = 1; iatm <= natm; iatm++) {
@@ -295,7 +297,7 @@ void AtomList::changeChargeDistribution
                }
             }
          }
-      } 
+      }
       else if ((xd1 != 0 && yd1 != 0) || (xd1 != 0 && zd1 != 0) ||
             (yd1 != 0 && zd1 != 0)) {
          if (xd1 == 0) {
@@ -306,7 +308,7 @@ void AtomList::changeChargeDistribution
                   charge[4*j + 2*k] = 1.0/fabs(yd*zd);
                }
             }
-         } 
+         }
          else if (yd1 == 0) {
             for (int i = 0; i <= 1; ++i) {
                for (int k = 0; k <= 1; ++k) {
@@ -315,7 +317,7 @@ void AtomList::changeChargeDistribution
                   charge[i + 4*k] = 1.0/fabs(xd*zd);
                }
             }
-         } 
+         }
          else if (zd1 == 0) {
             for (int i = 0; i <= 1; ++i){
                for (int j = 0; j <= 1; ++j){
@@ -325,21 +327,21 @@ void AtomList::changeChargeDistribution
                }
             }
          }
-      } 
+      }
       else if (xd1 != 0 || yd1 != 0 || zd1 != 0 ) {
          if (xd1 != 0) {
             charge[0] = 1.0/xd1;
             charge[1] = 1.0/(comdata.deltax()-xd1);
-         } 
+         }
          else if (yd1 != 0) {
             charge[0] = 1.0/yd1;
             charge[2] = 1.0/(comdata.deltay()-yd1);
-         } 
+         }
          else if (zd1 != 0) {
             charge[0] = 1.0/zd1;
             charge[4] = 1.0/(comdata.deltaz()-zd1);
          }
-      } 
+      }
       else {
          charge[0] = 1.0;
       }
@@ -363,5 +365,3 @@ void AtomList::print() const
    for(unsigned int i = 0; i < p_atomList.size(); i++)
       p_atomList[ i ].print();
 }
-
-
