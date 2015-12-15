@@ -350,15 +350,15 @@ struct GeometricFlowOutput GeometricFlow::run( const AtomList& atomList )
 	}
 
 
+   struct GeometricFlowOutput geoflowOut;
 
 	double sumpot = area + volume * lj_conms + attint * lj_roro;
-	double nonpolarSolvation = sumpot*m_gamma;
-	double totalSolvation = nonpolarSolvation + elec;
-   cout << "totalSolv:\t" << totalSolvation << "\t";
-   cout << "nonpolar: " << nonpolarSolvation << "\t";
-   cout << "electro: " << elec << "\n" << std::endl;
-
-   struct GeometricFlowOutput geoflowOut;
+	geoflowOut.m_nonpolarSolvation = sumpot*m_gamma;
+	geoflowOut.m_totalSolvation = geoflowOut.m_nonpolarSolvation + elec;
+   geoflowOut.m_elecSolvation = elec;
+   cout << "totalSolv:\t" << geoflowOut.m_totalSolvation << "\t";
+   cout << "nonpolar: " << geoflowOut.m_nonpolarSolvation << "\t";
+   cout << "electro: " << geoflowOut.m_elecSolvation << "\n" << std::endl;
 
    return geoflowOut;
 
