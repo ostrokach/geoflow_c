@@ -76,7 +76,7 @@ struct GeometricFlowOutput runGeometricFlowWrap
    ( struct GeometricFlowInput geoflowParams )
 {
 
-   cout << "boo from GeometricFlowWrap!" << endl; 
+   //cout << "boo from GeometricFlowWrap!" << endl; 
 
    GeometricFlow GF( geoflowParams );
    

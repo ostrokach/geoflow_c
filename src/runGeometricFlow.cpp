@@ -125,11 +125,11 @@ int main( int argc, char *argv[] )
        double extvalue = getVar( "Geoflow.extvalue", pt, GF.getExtValue() ) ;
        GF.setExtValue( extvalue );
 
-       double epsilons = getVar( "Geoflow.epsilons", pt, GF.getEpsilonS() ) ;
-       GF.setEpsilonS( epsilons );
+       double epsilons = getVar( "Geoflow.sdie", pt, GF.getSDie() ) ;
+       GF.setSDie( epsilons );
 
-       double epsilonp = getVar( "Geoflow.epsilonp", pt, GF.getEpsilonP() ) ;
-       GF.setEpsilonP( epsilonp );
+       double epsilonp = getVar( "Geoflow.pdie", pt, GF.getPDie() ) ;
+       GF.setPDie( epsilonp );
 
    }
 

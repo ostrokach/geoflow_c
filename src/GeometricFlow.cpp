@@ -78,7 +78,11 @@ GeometricFlow::GeometricFlow()
       .m_etolSolvation = 0.01,  // formerly CREVALUE in the fortran and C code. Error
             // tolerance for the solvation difference values 
 
-      .m_tol = 1e-4   // tolerance for the Eigen pbsolver
+      .m_tol = 1e-4,   // tolerance for the Eigen pbsolver
+
+      .m_pdie = 1.5,  // solute dielectric
+      .m_sdie = 80,   // solvent dielectric, from Thomas et al.
+      .m_press = .008
    }
 {
    setupDefaults();  // initialize all the other stuff we don't want the
@@ -107,7 +111,13 @@ GeometricFlow::GeometricFlow(const struct GeometricFlowInput &gfi)
       .m_etolSolvation = gfi.m_etolSolvation,  // formerly CREVALUE in the fortran and C code. Error
             // tolerance for the solvation difference values 
 
-      .m_tol = gfi.m_tol   // tolerance for the Eigen pbsolver
+      .m_tol = gfi.m_tol,   // tolerance for the Eigen pbsolver
+
+      // solvent dielectric value
+      .m_pdie = gfi.m_pdie, // solute dielectric
+      .m_sdie = gfi.m_sdie, // solvent dielectric
+      
+      .m_press = gfi.m_press // pressure kcal/(mol*A^3) 
    }
 {
    setupDefaults();
@@ -119,7 +129,6 @@ GeometricFlow::GeometricFlow(const struct GeometricFlowInput &gfi)
 //
 void GeometricFlow::setupDefaults()
 {
-   p_press = 0.008;
    p_npiter = 1;
    p_ngiter = 1;
 
@@ -154,9 +163,6 @@ void GeometricFlow::setupDefaults()
    p_tottf = 3.5;
    p_maxstep = 20;
 
-   // solvent dielectric value
-   p_epsilons = 80.00; // from Thomas et al.
-   p_epsilonp = 1.5;
    p_radexp = 1;
 
    // idacsl //idacsl: 0 for solvation force calculation; 1 or accuracy test
@@ -249,9 +255,9 @@ struct GeometricFlowOutput GeometricFlow::run( const AtomList& atomList )
    int iterf = 0, itert = 0; // iteration num for first iteration and total
    double potcoe = 1.0 / m_gamma;
    double lj_roro = p_density / m_gamma;
-   double lj_conms = p_press / m_gamma;
+   double lj_conms = m_press / m_gamma;
    int igfin = 1;
-   //std::cout << "blahh: " << p_press << " " << m_gamma << std::endl;
+   //std::cout << "blahh: " << m_press << " " << m_gamma << std::endl;
 
    //
    // iteration coupling surface generation and poisson solver
@@ -303,7 +309,7 @@ struct GeometricFlowOutput GeometricFlow::run( const AtomList& atomList )
 		tpb = tpb + titer;
 		itert += iter;
 
-		eps = p_epsilonp;
+		eps = m_pdie;
 		if (iloop == 1) {
 			pbsolver(eps, phivoc, bg, m_tol, iter);
 		}
@@ -318,7 +324,7 @@ struct GeometricFlowOutput GeometricFlow::run( const AtomList& atomList )
 					double phixz = phi(ix,iy,iz+1) -
                   phi(ix,iy,iz-1)/(2.0*p_comdata.deltaz());
 
-					phix(ix,iy,iz) = 0.5 * (p_epsilons - p_epsilonp) * (phixx *
+					phix(ix,iy,iz) = 0.5 * (m_sdie - m_pdie) * (phixx *
 							phixx +	phixy * phixy + phixz * phixz) * potcoe;
 				}
 			}
@@ -378,10 +384,10 @@ void GeometricFlow::domainInitialization( const AtomList& atomList )
 
 	for(size_t i = 0; i < natm; ++i) 
    {
-		atom_x[i] = atomList.get(i).x(); //xyzr[i][0];
-		atom_y[i] = atomList.get(i).y(); //xyzr[i][1];
-		atom_z[i] = atomList.get(i).z(); //xyzr[i][2];
-		atom_r[i] = atomList.get(i).r(); //xyzr[i][3];
+		atom_x[i] = atomList.get(i).x(); 
+		atom_y[i] = atomList.get(i).y(); 
+		atom_z[i] = atomList.get(i).z(); 
+		atom_r[i] = atomList.get(i).r(); 
 	}
 
 	double xleft = left(atom_x - atom_r, p_comdata.deltax(), p_extvalue);
@@ -421,10 +427,10 @@ void GeometricFlow::yhsurface( const AtomList& atomList,
 	double xl = p_comdata.xleft(), yl = p_comdata.yleft(), zl = p_comdata.zleft();
 	std::valarray<double> atom_x(natm), atom_y(natm), atom_z(natm), atom_r(natm);
 	for (size_t i = 0; i < natm; ++i) {
-		atom_x[i] = atomList.get(i).x(); //xyzr[i][0];
-		atom_y[i] = atomList.get(i).y(); //xyzr[i][1];
-		atom_z[i] = atomList.get(i).z(); //xyzr[i][2];
-		atom_r[i] = atomList.get(i).r(); //xyzr[i][3];
+		atom_x[i] = atomList.get(i).x();
+		atom_y[i] = atomList.get(i).y();
+		atom_z[i] = atomList.get(i).z();
+		atom_r[i] = atomList.get(i).r();
 	}
 
 	Mat<> su(surfu), g(surfu);
@@ -665,7 +671,7 @@ void GeometricFlow::normalizeSurfuAndEps (Mat<>& surfu, Mat<>& eps)
          surfu[i] = 0.0;
       }
 
-      eps[i] = p_epsilonp + (p_epsilons - p_epsilonp) *
+      eps[i] = m_pdie + (m_sdie - m_pdie ) *
          ((1000.0 - surfu[i])/1000.0 );
    }
 }
@@ -790,8 +796,8 @@ double GeometricFlow::qbboundary( double x, double y, double z,
       //std::cout << "q_q: " << q_q << std::endl;
       // distance, | x_{g} - x_{i} |
       double rr = sqrt( dot(x_q, y_q, z_q) );  // distance from
-      vbdn += q_q/( p_epsilons * rr );
-      //std::cout << "epsilons: " << p_epsilons << std::endl;
+      vbdn += q_q/( m_sdie * rr );
+      //std::cout << "m_sdie: " << m_sdie << std::endl;
    }
    return vbdn;
 }

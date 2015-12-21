@@ -17,6 +17,9 @@ struct GeometricFlowInput {
    double m_grid;
    double m_etolSolvation;
    double m_tol;
+   double m_pdie;
+   double m_sdie;
+   double m_press;
 
 } ;
 

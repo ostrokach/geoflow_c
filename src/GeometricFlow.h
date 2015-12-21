@@ -85,9 +85,7 @@ class GeometricFlow : protected GeometricFlowInput
       //  Input Parameters - see .cpp for available documentation on these
       //  variables.
       //
-      //int nmol = 17,	
       double p_expervalue;
-      double p_press;
       int    p_npiter;
       int    p_ngiter;
       double p_tauval;
@@ -96,17 +94,11 @@ class GeometricFlow : protected GeometricFlowInput
       double p_sigmas;
       double p_epsilonw;
       double p_extvalue;
-      // 0,		// iprec
-      // 10,		// istep
       int    p_iadi;
       double p_alpha;
-      // 1,		// IPBIN
       double p_tottf;
       int    p_maxstep;
-      double p_epsilons;
-      double p_epsilonp;
       int    p_radexp;
-      // 0,		// idacsl
       double p_density;
       double p_holst_energy_unit;
 
@@ -125,22 +117,6 @@ class GeometricFlow : protected GeometricFlowInput
 
    private:
 
-      /*
-      double p_comdata_deltax;
-      double p_comdata_deltay;
-      double p_comdata_deltaz;
-      double p_comdata_dcel;
-      double p_comdata_xleft;
-      double p_comdata_yleft;
-      double p_comdata_zleft;
-      double p_comdata_xright;
-      double p_comdata_yright;
-      double p_comdata_zright;
-      double p_comdata_nx;
-      double p_comdata_ny;
-      double p_comdata_nz;
-      double p_comdata_pi;
-      */
 
       // set up all the default variables
       void setupDefaults();  
@@ -226,7 +202,7 @@ class GeometricFlow : protected GeometricFlowInput
       //
       void setExperValue( double exper_val ) { p_expervalue = exper_val; }
 
-      void setPressure( double pres_i ) { p_press = pres_i; }
+      void setPressure( double pres_i ) { m_press = pres_i; }
       
       void setGamma( double gamma ) { m_gamma = gamma; }
       
@@ -237,9 +213,9 @@ class GeometricFlow : protected GeometricFlowInput
 
       void setExtValue( double extvalue ) { p_extvalue = extvalue; }
       
-      void setEpsilonS( double epsilons ) { p_epsilons = epsilons; }
+      void setSDie( double epsilons ) { m_sdie = epsilons; }
       
-      void setEpsilonP( double epsilonp ) { p_epsilonp = epsilonp; }
+      void setPDie( double epsilonp ) { m_pdie = epsilonp; }
 
       void setGrid( double grid ) { m_grid = grid ; }
 
@@ -258,7 +234,7 @@ class GeometricFlow : protected GeometricFlowInput
 
       double getExperValue() { return p_expervalue; }
 
-      double getPressure() { return p_press; }
+      double getPressure() { return m_press; }
       
       double getGamma() { return m_gamma; }
       
@@ -268,9 +244,9 @@ class GeometricFlow : protected GeometricFlowInput
 
       double getExtValue() { return p_extvalue; }
       
-      double getEpsilonS() { return p_epsilons; }
+      double getSDie() { return m_sdie; }
       
-      double getEpsilonP() { return p_epsilonp; }
+      double getPDie() { return m_pdie; }
 
       double getRadExp() { return p_radexp; }
 
