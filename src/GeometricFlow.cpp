@@ -60,8 +60,8 @@ GeometricFlow::GeometricFlow()
    : GeometricFlowInput {
       // set up defaults
 
-      // sent the boundary condition (see seteqb for more detail)
-      .m_boundaryCondition = MDH,
+      // set the boundary condition (see seteqb for more detail)
+      .m_boundaryCondition = MDH, 
 
       // VDWDISPERSION:  1(on) or 0 (off)- previously called REPULSIVE.
       // This is the option to include the dispersion force between solvent
@@ -109,7 +109,9 @@ GeometricFlow::GeometricFlow(const struct GeometricFlowInput &gfi)
       .m_gamma = gfi.m_gamma,
 
       // grid spacing, distance per cell
-      .m_grid = gfi.m_grid, // from Thomas et al.
+      .m_grid[0] = gfi.m_grid[0], // from Thomas et al.
+      .m_grid[1] = gfi.m_grid[1], // from Thomas et al.
+      .m_grid[2] = gfi.m_grid[2], // from Thomas et al.
 
       .m_etolSolvation = gfi.m_etolSolvation,  // formerly CREVALUE in the fortran and C code. Error
             // tolerance for the solvation difference values 

@@ -110,8 +110,9 @@ class GeometricFlow : protected GeometricFlowInput
 
    public:
 
-      // only one boundary condition (MDH) is actually implemented, so this
-      // method doesn't change anything, documented for future updates.
+      // only one boundary condition (BCFL_MDH) is actually implemented, so this
+      // method doesn't change anything, documented for future updates in
+      // github.
       void setBoundaryCondition( BoundaryType type ) { m_boundaryCondition = type; }
 
    private:
@@ -216,7 +217,10 @@ class GeometricFlow : protected GeometricFlowInput
       
       void setPDie( double epsilonp ) { m_pdie = epsilonp; }
 
-      void setGrid( double grid ) { m_grid = grid ; }
+      void setGrid( double grid[3] ) 
+         { m_grid[0] = grid[0];
+           m_grid[1] = grid[1];
+           m_grid[2] = grid[2]; }
 
       void setETolSolvation( double etol ) { m_etolSolvation = etol ; }
 
@@ -249,7 +253,7 @@ class GeometricFlow : protected GeometricFlowInput
 
       double getRadExp() { return p_radexp; }
 
-      double getGrid() { return m_grid; }
+      //double& getGrid() { return m_grid; }
 
       void write() const ;
 

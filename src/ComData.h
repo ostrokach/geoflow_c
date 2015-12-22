@@ -103,11 +103,11 @@ class ComData
          p_pi = acos(-1.0);  //Pi
       }
 
-      void init( double dcel )
+      void init( double dcel[3] )
       {
-         p_deltax = dcel;
-         p_deltay = dcel;
-         p_deltaz = dcel;
+         p_deltax = dcel[0];
+         p_deltay = dcel[1];
+         p_deltaz = dcel[2];
       }
 
       double pi() const { return p_pi; }

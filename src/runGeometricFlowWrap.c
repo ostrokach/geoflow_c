@@ -63,12 +63,15 @@ int main( int argc, char *argv[] )
    geoflowIn.m_boundaryCondition = MDH;
    geoflowIn.m_vdwdispersion = 0; // off
    geoflowIn.m_gamma =  0.0001;
-   geoflowIn.m_grid = .25;
+   geoflowIn.m_grid[0] = .25;
+   geoflowIn.m_grid[1] = .25;
+   geoflowIn.m_grid[2] = .25;
    geoflowIn.m_etolSolvation = .01 ;
    geoflowIn.m_tol = .0001;
    
    //
-   // TODO:  how do we want to share atom information???
+   // TODO: need to create an AtomList - the c version of this code for
+   // APBS uses the APBS data structures (Valist.h)
    //
 
    struct GeometricFlowOutput geoflowOut = 

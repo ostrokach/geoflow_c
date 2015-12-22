@@ -4,7 +4,20 @@
 // Boundary element type
 // TODO: "focus" (higher priority) and "sdh" should be added;  Only type
 // implemented is MDH
-enum BoundaryType{ ZERO, SDH, MDH, FOCUS, MAP};
+//enum BoundaryType{ ZERO, SDH, MDH, FOCUS, MAP};
+// these boundary types are copied from vhal.h in the apbs source
+enum BoundaryType{
+
+    ZERO=0,  /**< Zero Dirichlet boundary conditions */
+    SDH=1,  /**< Single-sphere Debye-Huckel Dirichlet boundary
+             * condition */
+    MDH=2,  /**< Multiple-sphere Debye-Huckel Dirichlet boundary
+             * condition */
+    UNUSED=3,  /**< Unused boundary condition method (placeholder) */
+    FOCUS=4,  /**< Focusing Dirichlet boundary condition */
+    MEM=5,  /**< Focusing membrane boundary condition */
+    MAP=6    /**< Skip first level of focusing use an external map */
+};
 
 //
 //  input
@@ -14,7 +27,7 @@ struct GeometricFlowInput {
    enum BoundaryType m_boundaryCondition; // TODO: make this an enum?
    int m_vdwdispersion;  // 1/0, on/off 
    double m_gamma;
-   double m_grid;
+   double m_grid[3];
    double m_etolSolvation;
    double m_tol;
    double m_pdie;

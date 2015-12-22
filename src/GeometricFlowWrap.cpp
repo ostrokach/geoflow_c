@@ -93,9 +93,11 @@ struct GeometricFlowOutput runGeometricFlowWrap
 //
 void printGeometricFlowStruct( struct GeometricFlowInput geoflowIn )
 {
-   printf("GeometricFlowInput: %i, %f, %f, %f, %f, %f, %f, %f, %i, %f\n", 
+   printf("GeometricFlowInput: %i, %f, %f, %f, %f, %f, %f, %f, %f, %f, %i, %f\n", 
          geoflowIn.m_boundaryCondition,
-         geoflowIn.m_grid,
+         geoflowIn.m_grid[0],
+         geoflowIn.m_grid[1],
+         geoflowIn.m_grid[2],
          geoflowIn.m_gamma, 
          geoflowIn.m_pdie,
          geoflowIn.m_sdie,
