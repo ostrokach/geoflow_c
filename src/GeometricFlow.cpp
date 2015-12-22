@@ -82,7 +82,10 @@ GeometricFlow::GeometricFlow()
 
       .m_pdie = 1.5,  // solute dielectric
       .m_sdie = 80,   // solvent dielectric, from Thomas et al.
-      .m_press = .008
+      .m_press = .008,
+
+      // bulk solvent density 
+      .m_bconc = 0.03347 // from Thomas et al.
    }
 {
    setupDefaults();  // initialize all the other stuff we don't want the
@@ -117,7 +120,8 @@ GeometricFlow::GeometricFlow(const struct GeometricFlowInput &gfi)
       .m_pdie = gfi.m_pdie, // solute dielectric
       .m_sdie = gfi.m_sdie, // solvent dielectric
       
-      .m_press = gfi.m_press // pressure kcal/(mol*A^3) 
+      .m_press = gfi.m_press, // pressure kcal/(mol*A^3) 
+      .m_bconc = gfi.m_bconc
    }
 {
    setupDefaults();
@@ -167,8 +171,6 @@ void GeometricFlow::setupDefaults()
 
    // idacsl //idacsl: 0 for solvation force calculation; 1 or accuracy test
 
-   // bulk density
-   p_density = 0.03347; // from Thomas et al.
    
    p_comdata.init( m_grid );
 
@@ -254,7 +256,7 @@ struct GeometricFlowOutput GeometricFlow::run( const AtomList& atomList )
    double tpb = 0.0;  // time step calculation for total pb
    int iterf = 0, itert = 0; // iteration num for first iteration and total
    double potcoe = 1.0 / m_gamma;
-   double lj_roro = p_density / m_gamma;
+   double lj_roro = m_bconc / m_gamma;
    double lj_conms = m_press / m_gamma;
    int igfin = 1;
    //std::cout << "blahh: " << m_press << " " << m_gamma << std::endl;

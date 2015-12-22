@@ -20,6 +20,7 @@ struct GeometricFlowInput {
    double m_pdie;
    double m_sdie;
    double m_press;
+   double m_bconc;
 
 } ;
 

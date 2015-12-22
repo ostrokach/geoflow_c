@@ -89,6 +89,24 @@ struct GeometricFlowOutput runGeometricFlowWrap
 }
 
 //
+//  print the geometric flow structure for debugging
+//
+void printGeometricFlowStruct( struct GeometricFlowInput geoflowIn )
+{
+   printf("GeometricFlowInput: %i, %f, %f, %f, %f, %f, %f, %f, %i, %f\n", 
+         geoflowIn.m_boundaryCondition,
+         geoflowIn.m_grid,
+         geoflowIn.m_gamma, 
+         geoflowIn.m_pdie,
+         geoflowIn.m_sdie,
+         geoflowIn.m_press,
+         geoflowIn.m_tol,
+         geoflowIn.m_bconc,
+         geoflowIn.m_vdwdispersion,
+         geoflowIn.m_etolSolvation );
+}
+
+//
 //  to call from APBS
 //
 #ifdef GEOFLOW_APBS
@@ -96,7 +114,7 @@ struct GeometricFlowOutput runGeometricFlowWrapAPBS
    ( struct GeometricFlowInput geoflowParams,
      Valist* molecules )   // or Valist* molecules[]
 {
-   cout << "boo from GeometricFlowWrap!" << endl; 
+   //cout << "boo from GeometricFlowWrap!" << endl; 
 
    //
    //  create the GeometricFlow object
@@ -106,15 +124,15 @@ struct GeometricFlowOutput runGeometricFlowWrapAPBS
    //
    // convert Valist to an AtomList
    //
-   cout << "converting atom list" << endl;
+   //cout << "converting atom list" << endl;
    AtomList atomList;
    Vatom *atom;
    unsigned int natoms = Valist_getNumberAtoms(molecules);
-   cout << "natoms: " << natoms << endl;
+   //cout << "natoms: " << natoms << endl;
    for (unsigned int i=0; i < natoms; i++) 
    {		
       atom = Valist_getAtom(molecules, i);
-      cout << "i: " << i << endl;
+      //cout << "i: " << i << endl;
       Atom myAtom( 
             GF.getFFModel(),
          Vatom_getPosition(atom)[0],
@@ -124,8 +142,8 @@ struct GeometricFlowOutput runGeometricFlowWrapAPBS
          Vatom_getCharge(atom) );
       atomList.add( myAtom );
    }
-   cout << "done with atom list" << endl;
-   atomList.print();
+   //cout << "done with atom list" << endl;
+   //atomList.print();
 
    //
    //  run Geoflow!

@@ -65,6 +65,8 @@ extern "C"{
 struct GeometricFlowOutput runGeometricFlowWrap
    ( struct GeometricFlowInput geoflowParams );
 
+void printGeometricFlowStruct( struct GeometricFlowInput geoflowIn );
+
 #ifdef GEOFLOW_APBS
 struct GeometricFlowOutput runGeometricFlowWrapAPBS
    ( struct GeometricFlowInput geoflowParams,

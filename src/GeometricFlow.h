@@ -99,7 +99,6 @@ class GeometricFlow : protected GeometricFlowInput
       double p_tottf;
       int    p_maxstep;
       int    p_radexp;
-      double p_density;
       double p_holst_energy_unit;
 
       ComData p_comdata;
