@@ -73,7 +73,9 @@ GeometricFlow::GeometricFlow()
       .m_gamma = 0.0001,
 
       // grid spacing, distance per cell
-      .m_grid = 0.25, // from Thomas et al.
+      .m_grid[0] = 0.25, 
+      .m_grid[1] = 0.25, 
+      .m_grid[2] = 0.25, 
 
       .m_etolSolvation = 0.01,  // formerly CREVALUE in the fortran and C code. Error
             // tolerance for the solvation difference values 
