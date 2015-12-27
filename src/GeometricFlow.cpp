@@ -74,9 +74,6 @@ GeometricFlow::GeometricFlow()
 
       // grid spacing, distance per cell
       .m_grid = {0.25, 0.25, 0.25},
-	  //.m_grid[0] = 0.25,
-      //.m_grid[1] = 0.25,
-      //.m_grid[2] = 0.25,
 
       .m_etolSolvation = 0.01,  // formerly CREVALUE in the fortran and C code. Error
             // tolerance for the solvation difference values 
@@ -113,9 +110,6 @@ GeometricFlow::GeometricFlow(const struct GeometricFlowInput &gfi)
 
       // grid spacing, distance per cell
       .m_grid = {gfi.m_grid[0], gfi.m_grid[1], gfi.m_grid[2]},
-	  //.m_grid[0] = gfi.m_grid[0],
-      //.m_grid[1] = gfi.m_grid[1],
-      //.m_grid[2] = gfi.m_grid[2],
 
       .m_etolSolvation = gfi.m_etolSolvation,  // formerly CREVALUE in the fortran and C code. Error
             // tolerance for the solvation difference values 
