@@ -1,5 +1,5 @@
 project (geoflow_c)
-cmake_minimum_required(VERSION 3.1)
+cmake_minimum_required(VERSION 3.0)
 
 option(ENABLE_GEOFLOW_APBS "geoflow APBS" OFF)
 if(ENABLE_GEOFLOW_APBS)

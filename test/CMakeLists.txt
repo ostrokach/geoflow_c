@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.1.0)
+cmake_minimum_required(VERSION 3.0)
 
 ExternalProject_Add( googlemock
 	SVN_REPOSITORY http://googlemock.googlecode.com/svn/trunk
