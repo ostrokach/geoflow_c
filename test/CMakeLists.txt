@@ -1,6 +1,4 @@
-cmake_minimum_required(VERSION 3.0)
-
-ExternalProject_Add( googlemock
+ExternalProject_Add(googlemock
 	SVN_REPOSITORY http://googlemock.googlecode.com/svn/trunk
 	SVN_REVISION -r 519
 	TIMEOUT 120
@@ -40,6 +38,7 @@ target_link_libraries(UnitTests
 	optimized ${binary_dir}/gtest/ReleaseLibs/${CMAKE_FIND_LIBRARY_PREFIXES}gtest.a)
 
 add_test(UnitTests UnitTests)
+
 # Sort of a hack to get tests to build so that "make test" works.  But now it's called
 # "make check".
 # See http://stackoverflow.com/questions/733475/cmake-ctest-make-test-doesnt-build-tests
