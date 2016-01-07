@@ -16,19 +16,32 @@ if (NOT CMAKE_BUILD_TYPE)
 	set(CMAKE_BUILD_TYPE Release)
 endif()
 
-# TODO: Go download boost if it's not found.
+#
+# Find or install Boost
+#
 find_package(Boost)
-include_directories(${Boost_INCLUDE_DIR})
+if (NOT Boost_INCLUDE_DIR)
+   	ExternalProject_add(boost
+		URL http://downloads.sourceforge.net/project/boost/boost/1.60.0/boost_1_60_0.tar.gz
+		PREFIX ${CMAKE_BINARY_DIR}/boost
+		CONFIGURE_COMMAND ""
+		INSTALL_COMMAND ""
+		BUILD_COMMAND "")
+	ExternalProject_Get_Property(boost source_dir)
+	include_directories(${source_dir})
+else()
+	include_directories(${Boost_INCLUDE_DIR})
+endif()
 
-SET(CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/src/cmake)
-FIND_PACKAGE(Eigen3)
-
+#
+# Find or install Eigen
+#
+set(CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/src/cmake)
+find_package(Eigen3)
 if (NOT EIGEN3_INCLUDE_DIR)
-	ExternalProject_add(eigen3
+   	ExternalProject_add(eigen3
 		URL https://bitbucket.org/eigen/eigen/get/3.2.5.tar.gz
-		CMAKE_ARGS -DCMAKE_INSTALL_PREFIX:PATH=${CMAKE_BINARY_DIR}
-		TIMEOUT 120
-		LOG_DOWNLOAD ON)
+		CMAKE_ARGS -DCMAKE_INSTALL_PREFIX:PATH=${CMAKE_BINARY_DIR})
 
 	ExternalProject_Get_Property(eigen3 source_dir)
 	include_directories(${source_dir})
