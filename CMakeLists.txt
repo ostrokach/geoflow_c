@@ -24,16 +24,14 @@ SET(CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/src/cmake)
 FIND_PACKAGE(Eigen3)
 
 if (NOT EIGEN3_INCLUDE_DIR)
-	# I can't seem to get this to work properly.
-	# CMake complains about the add_dependencies line.
-	#  -k*
-	ExternalProject_add( eigen3
+	ExternalProject_add(eigen3
 		URL https://bitbucket.org/eigen/eigen/get/3.2.5.tar.gz
+		CMAKE_ARGS -DCMAKE_INSTALL_PREFIX:PATH=${CMAKE_BINARY_DIR}
 		TIMEOUT 120
 		LOG_DOWNLOAD ON)
+
 	ExternalProject_Get_Property(eigen3 source_dir)
 	include_directories(${source_dir})
-	add_dependencies(GeometricFlow, eigen3)
 else()
 	include_directories(${EIGEN3_INCLUDE_DIR})
 endif()

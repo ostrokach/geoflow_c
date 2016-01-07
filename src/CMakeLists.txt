@@ -50,4 +50,7 @@ add_executable(GeometricFlowWrap
 )
 
 target_link_libraries(GeometricFlowWrap GeometricFlowLib)
+add_dependencies(GeometricFlow eigen3)
+add_dependencies(GeometricFlowLib eigen3)
+add_dependencies(GeometricFlowWrap eigen3)
 
