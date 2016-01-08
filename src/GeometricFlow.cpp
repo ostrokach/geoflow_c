@@ -56,73 +56,14 @@
 
 using namespace std;
 
-GeometricFlow::GeometricFlow()
-   : GeometricFlowInput {
-      // set up defaults
-
-      // set the boundary condition (see seteqb for more detail)
-      .m_boundaryCondition = MDH, 
-
-      // VDWDISPERSION:  1(on) or 0 (off)- previously called REPULSIVE.
-      // This is the option to include the dispersion force between solvent
-      // and solute molecules in non-polar contribution of solvation energy.
-      // It is different from the surface definition (i.e., van der Waals
-      // surface) which is critical to define the simulation domain)
-      .m_vdwdispersion = 0,
-
-      .m_gamma = 0.0001,
-
-      // grid spacing, distance per cell
-      .m_grid = {0.25, 0.25, 0.25},
-
-      .m_etolSolvation = 0.01,  // formerly CREVALUE in the fortran and C code. Error
-            // tolerance for the solvation difference values 
-
-      .m_tol = 1e-4,   // tolerance for the Eigen pbsolver
-
-      .m_pdie = 1.5,  // solute dielectric
-      .m_sdie = 80,   // solvent dielectric, from Thomas et al.
-      .m_press = .008,
-
-      // bulk solvent density 
-      .m_bconc = 0.03347 // from Thomas et al.
-   }
+GeometricFlow::GeometricFlow() : GeometricFlowInput()
 {
-   setupDefaults();  // initialize all the other stuff we don't want the
-                     // interface to see
+  setupDefaults();  // initialize all the other stuff we don't want the
+                    // interface to see
 }
 
 GeometricFlow::GeometricFlow(const struct GeometricFlowInput &gfi)
-   : GeometricFlowInput {
-      // set up defaults
-
-      // sent the boundary condition (see seteqb for more detail)
-      .m_boundaryCondition = gfi.m_boundaryCondition,
-
-      // VDWDISPERSION:  1(on) or 0 (off)- previously called REPULSIVE.
-      // This is the option to include the dispersion force between solvent
-      // and solute molecules in non-polar contribution of solvation energy.
-      // It is different from the surface definition (i.e., van der Waals
-      // surface) which is critical to define the simulation domain)
-      .m_vdwdispersion = gfi.m_vdwdispersion,
-
-      .m_gamma = gfi.m_gamma,
-
-      // grid spacing, distance per cell
-      .m_grid = {gfi.m_grid[0], gfi.m_grid[1], gfi.m_grid[2]},
-
-      .m_etolSolvation = gfi.m_etolSolvation,  // formerly CREVALUE in the fortran and C code. Error
-            // tolerance for the solvation difference values 
-
-      .m_tol = gfi.m_tol,   // tolerance for the Eigen pbsolver
-
-      // solvent dielectric value
-      .m_pdie = gfi.m_pdie, // solute dielectric
-      .m_sdie = gfi.m_sdie, // solvent dielectric
-      
-      .m_press = gfi.m_press, // pressure kcal/(mol*A^3) 
-      .m_bconc = gfi.m_bconc
-   }
+  : GeometricFlowInput(gfi) // Rely on default copy constructor
 {
    setupDefaults();
 }
