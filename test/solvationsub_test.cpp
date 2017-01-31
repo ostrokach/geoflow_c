@@ -91,9 +91,9 @@ protected:
 		{1.372, 0.00, 0.00, 1.40},
 		{1.764, 1.292, 0.00, 1.87}};
 	double chratm[natm] = {-0.257, -0.317, 0.398};
-	Mat<> charget {natm, foo};
-	Mat<> corlocqt {natm, foo, bar};
-	Mat<size_t> loc_qt {natm, foo, bar};
+	GMat<> charget {natm, foo};
+	GMat<> corlocqt {natm, foo, bar};
+	GMat<size_t> loc_qt {natm, foo, bar};
 };
 
 TEST_F(ChargeDist, Test_charget_WhateverThatIs) {

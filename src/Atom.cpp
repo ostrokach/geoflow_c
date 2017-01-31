@@ -220,7 +220,7 @@ AtomList::AtomList( double* xyzrs, double* pqrs, const int num_atoms,
  *   calculated.
  */
 void AtomList::changeChargeDistribution
-      ( Mat<>& charget, Mat<>& corlocqt, Mat< size_t>& loc_qt,
+      ( GMat<>& charget, GMat<>& corlocqt, GMat< size_t>& loc_qt,
         const ComData& comdata ) const
 {
 	//for (size_t iatm = 1; iatm <= natm; iatm++) {
@@ -242,8 +242,8 @@ void AtomList::changeChargeDistribution
       // 	<< "," << k_q << std::endl;
 
 
-      Mat<size_t> loc_q(8,3);
-      Mat<> corlocq(8,3);
+      GMat<size_t> loc_q(8,3);
+      GMat<> corlocq(8,3);
       for (size_t i = 0; i <= 1; ++i) {
          for (size_t j = 0; j <= 1; ++j) {
             for (size_t k = 0; k <= 1; ++k) {

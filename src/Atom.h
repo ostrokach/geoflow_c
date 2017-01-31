@@ -65,7 +65,7 @@
 #include <climits>
 #include <stdio.h>
 
-#include "Mat.h"
+#include "GMat.h"
 #include "ComData.h"
 
 using namespace std;
@@ -147,7 +147,7 @@ class AtomList
       void add( Atom A ) { p_atomList.push_back(A); };
 
       void changeChargeDistribution
-         ( Mat<>& charget, Mat<>& corlocqt, Mat< size_t>& loc_qt,
+         ( GMat<>& charget, GMat<>& corlocqt, GMat< size_t>& loc_qt,
            const ComData& comData ) const;
 
       void print() const;

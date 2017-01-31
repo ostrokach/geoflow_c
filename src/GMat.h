@@ -1,4 +1,4 @@
-///  @file    Mat.h
+///  @file    GMat.h
 ///  @author  Andrew Stevens
 ///  @brief Wrapper class for 2d and 3d arrays
 ///  @ingroup Geoflow
@@ -72,10 +72,10 @@ inline double dot(double x, double y, double z) { return x*x + y*y + z*z; }
 
 template <typename T> struct Stencil;
 
-template <typename T = double> class Mat;
+template <typename T = double> class GMat;
 
 template <typename T>
-class Mat {
+class GMat {
 
    private:
       friend struct Stencil<T>;
@@ -99,24 +99,24 @@ class Mat {
    private:
       Eigen::Matrix< T, Eigen::Dynamic, 1 > vec;
 
-      Mat();
+      GMat();
 
    public:
       
       // hx, hy, and hz are the grid spacing, in Angstroms (presumably)
-      Mat(size_t nx, size_t ny, size_t nz=1, T a=0):
+      GMat(size_t nx, size_t ny, size_t nz=1, T a=0):
          _nx(nx), _ny(ny), _nz(nz), _hx(1), _hy(1), _hz(1), vec(nx*ny*nz)
          { vec.fill(a); }
       
-      Mat(size_t nx, size_t ny, size_t nz, double hx, double hy, double hz, T a=0):
+      GMat(size_t nx, size_t ny, size_t nz, double hx, double hy, double hz, T a=0):
          _nx(nx), _ny(ny), _nz(nz), _hx(hx), _hy(hy), _hz(hz), vec(nx*ny*nz)
          { vec.fill(a); }
 
-      //Mat(const Mat&) default, vec is copyable
+      //GMat(const GMat&) default, vec is copyable
 
-      ~Mat() {};
+      ~GMat() {};
 
-      friend void swap(Mat<T> &a, Mat<T> &b) throw() {
+      friend void swap(GMat<T> &a, GMat<T> &b) throw() {
          using std::swap;
          a.vec.swap(b.vec);
          swap(a._nx, b._nx);
@@ -137,19 +137,19 @@ class Mat {
          return vec;
       }
 
-      bool equalSize(const Mat<T>& rhs) const
+      bool equalSize(const GMat<T>& rhs) const
       {
          return (this->_nx == rhs._nx) && (this->_ny == rhs._ny) &&
             (this->_nz == rhs._nz);
       }
 
-      bool equalSpacing(const Mat<T>& rhs) const
+      bool equalSpacing(const GMat<T>& rhs) const
       {
          return (this->_hx == rhs._hx) && (this->_hy == rhs._hy) &&
             (this->_hz == rhs._hz);
       }
 
-      bool operator==(const Mat<T>& rhs) const
+      bool operator==(const GMat<T>& rhs) const
       {
          return (data() == rhs.data()) && equalSize(rhs) && equalSpacing(rhs);
       }
@@ -205,12 +205,12 @@ class Mat {
          return vec.data() + size();
       }
 
-      Mat<T>& operator=(T a)
+      GMat<T>& operator=(T a)
       {
          vec.fill(a); return *this;
       }
 
-      Mat<T>& operator=(Mat a)
+      GMat<T>& operator=(GMat a)
       {
          swap(*this, a);
          return *this;
@@ -226,12 +226,12 @@ class Mat {
          return Stencil<T>(*this, _nx-1,_ny-1,_nz-1);
       }
 
-      //friend std::ostream& operator<<(std::ostream& os, const Mat<T>& M);
+      //friend std::ostream& operator<<(std::ostream& os, const GMat<T>& M);
 };
 
 /*
 template<typename T>
-std::ostream& operator<<( std::ostream& os, const Mat<T>& M)
+std::ostream& operator<<( std::ostream& os, const GMat<T>& M)
 {
     os << M.vec << std::endl; 
     return os;
@@ -243,7 +243,7 @@ template<typename T>
 struct Stencil : public std::iterator<std::forward_iterator_tag, T>
 {
    //this should be a const iterator :)
-   Mat<T>& _mat;
+   GMat<T>& _mat;
    const T halfhx,h2x,qrth2x;
    const T halfhy,h2y,qrth2y;
    const T halfhz,h2z,qrth2z;
@@ -252,7 +252,7 @@ struct Stencil : public std::iterator<std::forward_iterator_tag, T>
 
    T *c;
 
-   Stencil(Mat<T>& mat, size_t x, size_t y, size_t z) : _mat(mat),
+   Stencil(GMat<T>& mat, size_t x, size_t y, size_t z) : _mat(mat),
    halfhx(0.5/mat.hx()),				// W1(1)
    h2x(1.0/(mat.hx()*mat.hx())),		// W2(1)
    qrth2x(0.25/(mat.hx()*mat.hx())),	// WXY(1,1)

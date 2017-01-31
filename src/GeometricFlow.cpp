@@ -1,6 +1,6 @@
 ///  @file GeometricFlow.cpp
 ///  @author Elizabeth Jurrus, Andrew Stevens, Peter Hui, Kyle Monson, Zhan Chen, Guowei Wei
-///  @brief main class for all Geometric Flow methods 
+///  @brief main class for all Geometric Flow methods
 ///  @ingroup Geoflow
 ///  @version $Id$
 ///  @attention
@@ -32,7 +32,7 @@
 ///
 /// Redistributions in binary form must reproduce the above copyright notice,
 /// this list of conditions and the following disclaimer in the documentation
-/// and/or other materials provided with the distribution.
+/// and/or other Materials provided with the distribution.
 ///
 /// Neither the name of the developer nor the names of its contributors may be
 /// used to endorse or promote products derived from this software without
@@ -52,7 +52,7 @@
 ///
 /// @endverbatim
 #include "GeometricFlow.h"
-#include "Mat.h"
+#include "GMat.h"
 
 using namespace std;
 
@@ -84,7 +84,7 @@ void GeometricFlow::setupDefaults()
 
    p_ffmodel = 1;  // FFMODEL: 1 for ZAP-9/AM1-BCCv1; 2 for OPLS/AA
 
-   // Solvent radius (SIGMAS: Angstrom (radius of water molecule based 
+   // Solvent radius (SIGMAS: Angstrom (radius of water molecule based
    //   on LJ parameter sigma)
    p_sigmas = 1.5828; // from Thomas et al.
 
@@ -93,7 +93,7 @@ void GeometricFlow::setupDefaults()
    // call it ljwell?
    p_epsilonw = 0.1554; // from Thomas et al.
 
-   
+
    // EXTVALUE:  (distance atom surface and box boundary)
    p_extvalue = 1.90;
    // iprec
@@ -103,7 +103,7 @@ void GeometricFlow::setupDefaults()
 
    // ALPHA: weight of previous solution to change the next solution in geometry flow
    p_alpha = 0.50;
-   
+
    // IPBIN  //IPBIN: start guess for PB 1; inherit '0' - not used?
    p_tottf = 3.5;
    p_maxstep = 20;
@@ -112,7 +112,7 @@ void GeometricFlow::setupDefaults()
 
    // idacsl //idacsl: 0 for solvation force calculation; 1 or accuracy test
 
-   
+
    p_comdata.init( m_grid );
 
    // http://ccom.ucsd.edu/~mholst/pubs/dist/Hols94d.pdf (see page 12)
@@ -129,7 +129,7 @@ void GeometricFlow::setupDefaults()
 /*
 //  TODO - need to implement?
 //  copy constructor - constructors are commented out for maintenance.
-// 
+//
 GeometricFlow::GeometricFlow( const GeometricFlow& gf )
 {
 }
@@ -150,9 +150,9 @@ void printAllParams()
 {
 }
 
-//template class Mat<double>;
+//template class GMat<double>;
 //template
-//std::ostream& operator<< <double> ( std::ostream& os, const Mat<double>& M);
+//std::ostream& operator<< <double> ( std::ostream& os, const GMat<double>& M);
 
 struct GeometricFlowOutput GeometricFlow::run( const AtomList& atomList )
 {
@@ -165,14 +165,14 @@ struct GeometricFlowOutput GeometricFlow::run( const AtomList& atomList )
 	std::cout << "grid spacing:\t" << p_comdata.deltax() << " " <<
       p_comdata.deltay() << " " << p_comdata.deltaz() << std::endl;
 
-  
+
    //
    //  assign charge distributions
    //
    unsigned int natm = atomList.size();
-   Mat<> charget(natm, 8);
-	Mat<> corlocqt(natm, 8, 3);
-	Mat<size_t> loc_qt(natm,8,3);
+   GMat<> charget(natm, 8);
+	GMat<> corlocqt(natm, 8, 3);
+	GMat<size_t> loc_qt(natm,8,3);
    atomList.changeChargeDistribution( charget, corlocqt, loc_qt, p_comdata );
    //atomList.print();
    //cout<< "test: " ; p_comdata.print(); cout << endl ;
@@ -180,18 +180,18 @@ struct GeometricFlowOutput GeometricFlow::run( const AtomList& atomList )
    //
    //  setup phi
    //
-	Mat<> phi( p_comdata.nx(), p_comdata.ny(), p_comdata.nz(),
-              p_comdata.deltax(), p_comdata.deltay(), p_comdata.deltaz() ), 
-         phix( phi ), 
-         phivoc( phi ), 
-         surfu( phi ), 
+	GMat<> phi( p_comdata.nx(), p_comdata.ny(), p_comdata.nz(),
+              p_comdata.deltax(), p_comdata.deltay(), p_comdata.deltaz() ),
+         phix( phi ),
+         phivoc( phi ),
+         surfu( phi ),
          eps( phi ),
 			bg( phi );
 
    vector<double> solv(p_maxstep+1);  // keep track of the solvation energies
 	double diffEnergy = 100;
 
-	int iloop = 0; 
+	int iloop = 0;
 	double tott = 0.0;
 	double elec = 0.0, area = 0.0, volume = 0.0, attint = 0.0;
    double tpb = 0.0;  // time step calculation for total pb
@@ -205,7 +205,7 @@ struct GeometricFlowOutput GeometricFlow::run( const AtomList& atomList )
    //
    // iteration coupling surface generation and poisson solver
    //
-   while ( (iloop < p_maxstep) && (diffEnergy > m_etolSolvation) ) 
+   while ( (iloop < p_maxstep) && (diffEnergy > m_etolSolvation) )
    {
       iloop++;
       double deltat = 0; //this is wrong for adi...
@@ -225,7 +225,7 @@ struct GeometricFlowOutput GeometricFlow::run( const AtomList& atomList )
 		area = volume = attint = 0.0;
 		yhsurface(atomList, tott, deltat, phix, surfu, iloop, area,
    			    volume, attint, p_alpha, p_iadi, igfin, lj_roro, lj_conms);
-		normalizeSurfuAndEps(surfu, eps); 
+		normalizeSurfuAndEps(surfu, eps);
       // Keith wants surfu printed into a dx file
       //cout << "surfu: " ; surfu.print(); std::cout << std::endl ;
       //cout << "eps: " ; eps.print(); std::cout << std::endl ;
@@ -234,7 +234,7 @@ struct GeometricFlowOutput GeometricFlow::run( const AtomList& atomList )
 
       //
       // Create B (bg)
-      // 
+      //
 		if (iloop == 1) {
 			seteqb(bg, atomList, charget, corlocqt );
 		}
@@ -320,17 +320,17 @@ struct GeometricFlowOutput GeometricFlow::run( const AtomList& atomList )
 void GeometricFlow::domainInitialization( const AtomList& atomList )
 {
    unsigned int natm = atomList.size();
-    std::valarray<double> atom_x(natm), 
+    std::valarray<double> atom_x(natm),
                           atom_y(natm),
-                          atom_z(natm), 
+                          atom_z(natm),
                           atom_r(natm);
 
-	for(size_t i = 0; i < natm; ++i) 
+	for(size_t i = 0; i < natm; ++i)
    {
-		atom_x[i] = atomList.get(i).x(); 
-		atom_y[i] = atomList.get(i).y(); 
-		atom_z[i] = atomList.get(i).z(); 
-		atom_r[i] = atomList.get(i).r(); 
+		atom_x[i] = atomList.get(i).x();
+		atom_y[i] = atomList.get(i).y();
+		atom_z[i] = atomList.get(i).z();
+		atom_r[i] = atomList.get(i).r();
 	}
 
 	double xleft = left(atom_x - atom_r, p_comdata.deltax(), p_extvalue);
@@ -350,7 +350,7 @@ void GeometricFlow::domainInitialization( const AtomList& atomList )
 	zright = zleft + p_comdata.deltaz()*(nz - 1);
 
 	//keep this around for later
-   p_comdata.setBounds( xleft, xright, 
+   p_comdata.setBounds( xleft, xright,
                         yleft, yright,
                         zleft, zright,
                         nx, ny, nz );
@@ -361,7 +361,7 @@ void GeometricFlow::domainInitialization( const AtomList& atomList )
 //		yhsurface
 //
 void GeometricFlow::yhsurface( const AtomList& atomList,
-		double tott, double dt, Mat<>& phitotx, Mat<>& surfu, int iloop,
+		double tott, double dt, GMat<>& phitotx, GMat<>& surfu, int iloop,
 		double& area, double& volume, double& attint, double alpha, int iadi,
 		int igfin, double roro, double conms )
 {
@@ -376,7 +376,7 @@ void GeometricFlow::yhsurface( const AtomList& atomList,
 		atom_r[i] = atomList.get(i).r();
 	}
 
-	Mat<> su(surfu), g(surfu);
+	GMat<> su(surfu), g(surfu);
 	initial(xl, yl, zl, natm, atom_x,atom_y, atom_z, atom_r, g, su);
 	if (iloop > 1 && igfin == 1)
 		su = surfu;
@@ -408,7 +408,7 @@ void GeometricFlow::yhsurface( const AtomList& atomList,
 		}
 	}
 
-	Mat<> potr(nx,ny,nz), pota(nx,ny,nz);
+	GMat<> potr(nx,ny,nz), pota(nx,ny,nz);
 	potIntegral(rcfactor, natm, atom_x, atom_y, atom_z, seta12, seta6,
 			epsilon, sigma, g, potr, pota);
 
@@ -445,7 +445,7 @@ void GeometricFlow::yhsurface( const AtomList& atomList,
 	volume = volumeIntegration(su);
 	std::cout << "volume = " << volume << std::endl;
 
-	Mat<> fintegr(nx,ny,nz);
+	GMat<> fintegr(nx,ny,nz);
 	double dx = p_comdata.deltax(), dy = p_comdata.deltay(), dz = p_comdata.deltaz();
 	for (size_t x = 2; x < nx; ++x) {
 		for (size_t y = 2; y < ny; ++y) {
@@ -486,7 +486,7 @@ void GeometricFlow::potIntegral(double rcfactor, size_t natm,
       valarray<double>& atom_x, valarray<double>& atom_y,
       valarray<double>& atom_z, valarray<double>& seta12,
       valarray<double>& seta6, valarray<double>& epsilon,
-      valarray<double>& sigma, Mat<>& g, Mat<>& potr, Mat<>& pota)
+      valarray<double>& sigma, GMat<>& g, GMat<>& potr, GMat<>& pota)
 {
    double dx = p_comdata.deltax(), dy = p_comdata.deltay(), dz = p_comdata.deltaz();
    for (size_t x = 2; x < potr.nx(); ++x) {
@@ -528,7 +528,7 @@ void GeometricFlow::potIntegral(double rcfactor, size_t natm,
 //
 //  volumeIntegration
 //
-double GeometricFlow::volumeIntegration(const Mat<>& f)
+double GeometricFlow::volumeIntegration(const GMat<>& f)
 {
 	double sumf = f.baseInterface().sum();
 	return sumf/1000 * p_comdata.deltax() * p_comdata.deltay() * p_comdata.deltaz();
@@ -537,10 +537,10 @@ double GeometricFlow::volumeIntegration(const Mat<>& f)
 //
 //  upwinding
 //
-void GeometricFlow::upwinding(double dt, int nt, 
-                              Mat<>& g, Mat<>& su, Mat<>& phitotx)
+void GeometricFlow::upwinding(double dt, int nt,
+                              GMat<>& g, GMat<>& su, GMat<>& phitotx)
 {
-	Mat<> surfnew(su);
+	GMat<> surfnew(su);
 	for (int t = 0; t < nt; ++t) {
 		for (Stencil<double> phi = su.stencilBegin();
 				phi != su.stencilEnd(); ++phi) {
@@ -559,10 +559,10 @@ void GeometricFlow::upwinding(double dt, int nt,
 void GeometricFlow::initial(double xl, double yl, double zl, int n_atom,
 		const std::valarray<double>& atom_x, const std::valarray<double>& atom_y,
 		const std::valarray<double>& atom_z, const std::valarray<double>& atom_r,
-		Mat<>& g, Mat<>& phi)
+		GMat<>& g, GMat<>& phi)
 {
-	double dx = p_comdata.deltax(), 
-          dy = p_comdata.deltay(), 
+	double dx = p_comdata.deltax(),
+          dy = p_comdata.deltay(),
           dz = p_comdata.deltaz();
 	g = 1.0;
 	phi = 0.0;
@@ -602,7 +602,7 @@ void GeometricFlow::initial(double xl, double yl, double zl, int n_atom,
 //
 //  normalizeSurfAndEps
 //
-void GeometricFlow::normalizeSurfuAndEps (Mat<>& surfu, Mat<>& eps) 
+void GeometricFlow::normalizeSurfuAndEps (GMat<>& surfu, GMat<>& eps)
 {
 
    for (size_t i = 0; i < surfu.size(); i++) {
@@ -634,8 +634,8 @@ void GeometricFlow::normalizeSurfuAndEps (Mat<>& surfu, Mat<>& eps)
  * 					must be passed as a pointer, since natm is a variable.
  * 		charget:	charget array.  This is an [8][natm] int array.
  */
-void GeometricFlow::computeSoleng(double& soleng, 
-                   Mat<>& phi, Mat<>& charget, Mat<size_t>& loc_qt)
+void GeometricFlow::computeSoleng(double& soleng,
+                   GMat<>& phi, GMat<>& charget, GMat<size_t>& loc_qt)
 {
    soleng = 0.0;
    for (size_t iind = 1; iind <= charget.nx(); iind++) {
@@ -650,13 +650,13 @@ void GeometricFlow::computeSoleng(double& soleng,
 }
 
 //
-// seteqb - "Set Equation B" - set up for the B matrix (Vector) of the non-regularized
+// seteqb - "Set Equation B" - set up for the B GMatrix (Vector) of the non-regularized
 // generalized Poission equation that is solved for computing the
 // electrostatic potential.
 //
 // For boundary conditions, the geometric flow (non-regularized)
 // currently uses  \phi \rightarrow \phi_{c} (Coulombic potential) at the
-// outer boundary which can be realized by 
+// outer boundary which can be realized by
 //  \phi_{c}\left ( x=x_{g} \right )=
 //          \sum_{i=1}^{N}\frac{q_{i}}{\varepsilon_{s}\left | x_{g}-x_{i} \right | }
 // (q_{i} is a charge at x_{i}), x_{g} is the position at the outer
@@ -667,11 +667,11 @@ void GeometricFlow::computeSoleng(double& soleng,
 //  weighted by the distance from all the atoms.
 //  (Is this the mdh option in APBS?)
 //
-void GeometricFlow::seteqb(Mat<>& bg, const AtomList& AL, 
-      const Mat<>& charget, const Mat<>& corlocqt)
+void GeometricFlow::seteqb(GMat<>& bg, const AtomList& AL,
+      const GMat<>& charget, const GMat<>& corlocqt)
 {
    double sum = 0.0;
-   for (size_t i = 1; i <= p_comdata.nx(); ++i) 
+   for (size_t i = 1; i <= p_comdata.nx(); ++i)
    {
       for (size_t j = 1; j <= p_comdata.ny(); ++j)
       {
@@ -679,7 +679,7 @@ void GeometricFlow::seteqb(Mat<>& bg, const AtomList& AL,
          {
             double fp = qb( i, j, k, AL, charget, corlocqt );
             //std::cout << "fp: " << fp << std::endl ;
-            int ijk = (i-1) * p_comdata.ny() * 
+            int ijk = (i-1) * p_comdata.ny() *
                p_comdata.nz() + (j-1) * p_comdata.nz() + k - 1;
             bg[ijk] = fp;
             sum += fp;
@@ -694,7 +694,7 @@ void GeometricFlow::seteqb(Mat<>& bg, const AtomList& AL,
 //  qb
 //
 double GeometricFlow::qb( size_t i,size_t j,size_t k, const AtomList& AL,
-      const Mat<>& charget, const Mat<>& corlocqt )
+      const GMat<>& charget, const GMat<>& corlocqt )
 {
    double x = p_comdata.xvalue(i);
    double y = p_comdata.yvalue(j);
@@ -702,7 +702,7 @@ double GeometricFlow::qb( size_t i,size_t j,size_t k, const AtomList& AL,
    //std::cout << "x,y,z: " << x << ", " << y << ", " << z << std::endl;
    if(i < 2 || i > p_comdata.nx() - 1 ||
          j < 2 || j > p_comdata.ny() - 1 ||
-         k < 2 || k > p_comdata.nz() - 1) 
+         k < 2 || k > p_comdata.nz() - 1)
    {
       double foo = qbboundary( x, y, z, AL );
       //std::cout << "foo: " << foo << std::endl;
@@ -719,7 +719,7 @@ double GeometricFlow::qb( size_t i,size_t j,size_t k, const AtomList& AL,
 //
 double GeometricFlow::qbboundary( double x, double y, double z,
       const AtomList& atomList )
-{  
+{
    double vbdn = 0;
    for (size_t a = 0; a < atomList.size(); ++a) {
       //
@@ -729,11 +729,11 @@ double GeometricFlow::qbboundary( double x, double y, double z,
       double x_q = x - atomList.get(a).x(); //xyzr[a][1];
       double y_q = y - atomList.get(a).y(); //xyzr[a][2];
       double z_q = z - atomList.get(a).z(); //xyzr[a][3];
-      //std::cout << "atomList: " 
-      //   << atomList.get(a).x() << ", " 
-      //   << atomList.get(a).y() << ", " 
-      //   << atomList.get(a).z() << endl; 
-      //std::cout << "x_q,y_q,z_q: " << x_q << ", " 
+      //std::cout << "atomList: "
+      //   << atomList.get(a).x() << ", "
+      //   << atomList.get(a).y() << ", "
+      //   << atomList.get(a).z() << endl;
+      //std::cout << "x_q,y_q,z_q: " << x_q << ", "
       //   << y_q << ", " << z_q << std::endl;
       double q_q = atomList.get(a).pqr(); //pqr[a];
       //std::cout << "q_q: " << q_q << std::endl;
@@ -749,7 +749,7 @@ double GeometricFlow::qbboundary( double x, double y, double z,
 //  qbinterior - laplacian???
 //
 double GeometricFlow::qbinterior(double x, double y, double z,
-      const Mat<>& charget, const Mat<>& corlocqt)
+      const GMat<>& charget, const GMat<>& corlocqt)
 {
    double fp = 0;
    for (size_t a = 1; a <= charget.nx(); ++a) {
@@ -771,16 +771,16 @@ double GeometricFlow::qbinterior(double x, double y, double z,
 //
 //  pbsolver
 //
-void GeometricFlow::pbsolver(const Mat<>& eps, Mat<>& phi, const Mat<>& bgf, double tol, int iter)
+void GeometricFlow::pbsolver(const GMat<>& eps, GMat<>& phi, const GMat<>& bgf, double tol, int iter)
 {
    //cout << "eps: " ; eps.print(); std::cout << std::endl ;
    //cout << "bgf: " ; bgf.print(); std::cout << std::endl ;
 	size_t nx = eps.nx(), ny = eps.ny(), nz = eps.nz();
-	double dx = p_comdata.deltax(), 
-          dy = p_comdata.deltay(), 
+	double dx = p_comdata.deltax(),
+          dy = p_comdata.deltay(),
           dz = p_comdata.deltaz();
 
-	Mat<> eps1(nx,ny,nz), eps2(nx,ny,nz), eps3(nx,ny,nz);
+	GMat<> eps1(nx,ny,nz), eps2(nx,ny,nz), eps3(nx,ny,nz);
 	for(size_t i = 1; i < nx; ++i) {
 		for(size_t j = 1; j < ny; ++j) {
 			for(size_t k = 1; k < nz; ++k) {

@@ -67,7 +67,7 @@
 #include <valarray>
 
 #include "Atom.h"
-#include "Mat.h"
+#include "GMat.h"
 #include "ComData.h"
 #include "GeometricFlowStruct.h"
 
@@ -137,7 +137,7 @@ class GeometricFlow : protected GeometricFlowInput
       void domainInitialization( const AtomList& atomlist );
 
       void yhsurface( const AtomList& atomList, 
-         double tott, double dt, Mat<>& phitotx, Mat<>& surfu, int iloop,
+         double tott, double dt, GMat<>& phitotx, GMat<>& surfu, int iloop,
          double& area, double& volume, double& attint, double alpha, int iadi,
          int igfin, double roro, double conms );
 
@@ -145,35 +145,35 @@ class GeometricFlow : protected GeometricFlowInput
             valarray<double>& atom_x, valarray<double>& atom_y,
             valarray<double>& atom_z, valarray<double>& seta12,
             valarray<double>& seta6, valarray<double>& epsilon,
-            valarray<double>& sigma, Mat<>& g, Mat<>& potr, Mat<>& pota);
+            valarray<double>& sigma, GMat<>& g, GMat<>& potr, GMat<>& pota);
       
-      double volumeIntegration(const Mat<>& f);
+      double volumeIntegration(const GMat<>& f);
 
       void upwinding(double dt, int nt, 
-                              Mat<>& g, Mat<>& su, Mat<>& phitotx);
+                              GMat<>& g, GMat<>& su, GMat<>& phitotx);
 
       void initial(double xl, double yl, double zl, int n_atom,
             const std::valarray<double>& atom_x, const std::valarray<double>& atom_y,
             const std::valarray<double>& atom_z, const std::valarray<double>& atom_r,
-            Mat<>& g, Mat<>& phi);
+            GMat<>& g, GMat<>& phi);
 
-      void normalizeSurfuAndEps (Mat<>& surfu, Mat<>& eps);
+      void normalizeSurfuAndEps (GMat<>& surfu, GMat<>& eps);
 
       void computeSoleng(double& soleng, 
-                   Mat<>& phi, Mat<>& charget, Mat<size_t>& loc_qt);
+                   GMat<>& phi, GMat<>& charget, GMat<size_t>& loc_qt);
 
-      void seteqb( Mat<>& bg, const AtomList& al, const Mat<>& charget,
-            const Mat<>& corlocqt);
+      void seteqb( GMat<>& bg, const AtomList& al, const GMat<>& charget,
+            const GMat<>& corlocqt);
 
       double qb(size_t i,size_t j,size_t k, const AtomList& al,
-            const Mat<>& charget, const Mat<>& corlocqt );
+            const GMat<>& charget, const GMat<>& corlocqt );
       
       double qbboundary( double x, double y, double z, const AtomList& al );
       
       double qbinterior(double x, double y, double z, 
-            const Mat<>& charget, const Mat<>& corlocqt);
+            const GMat<>& charget, const GMat<>& corlocqt);
 
-      void pbsolver(const Mat<>& eps, Mat<>& phi, const Mat<>& bgf, double tol, int iter);
+      void pbsolver(const GMat<>& eps, GMat<>& phi, const GMat<>& bgf, double tol, int iter);
 
    public:
 
