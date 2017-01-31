@@ -1,0 +1,31 @@
+image: condaforge/linux-anvil:latest
+
+stages:
+  - build
+  - test
+  - deploy
+
+build:
+  stage: build
+  script:
+    - conda config --append channels kimlab
+    - conda config --append channels ostrokach
+    - cd devtools/conda-recipe
+    - conda build .
+    # Save conda package
+    - cd $CI_PROJECT_DIR
+    - mkdir -p conda-bld/linux-64
+    - cp /opt/conda/conda-bld/linux-64/*.tar.bz2 conda-bld/linux-64/
+  artifacts:
+    paths:
+    - conda-bld
+
+test:
+  stage: test
+  script:
+    - conda install conda-bld/linux-64/*.tar.bz2
+
+deploy:
+  stage: deploy
+  script:
+    - anaconda -t $ANACONDA_TOKEN upload conda-bld/linux-64/*.tar.bz2
