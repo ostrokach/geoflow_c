@@ -1,0 +1,31 @@
+{% set version = "1.5" %}
+
+package:
+  name: geoflow_c
+  version: {{ version }}
+
+source:
+  path: ../../
+
+build:
+  number: 5
+
+requirements:
+  build:
+    - cmake
+    - fetk
+    - apbs-headers
+    - eigen
+    - boost
+  run:
+    - eigen
+    - boost
+
+# test:
+#   commands:
+#     - maloc --help
+
+about:
+  home: https://github.com/Electrostatics/geoflow_c
+  summary: ...
+  license: LGPL
